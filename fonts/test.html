@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>SVG font test</title>
+	<style>
+
+		@font-face{
+			font-family: 'SVGfont';
+			src: url('Zebrawood.otf') format('opentype');
+		}
+
+		body {
+			background-color: #A6A6A6;
+		}
+
+		p {
+			font-family: 'SVGfont', serif;
+			font-size: 200pt;
+			margin-top: 0;
+			margin-bottom: 0;
+			font-feature-settings: "kern";
+		}
+
+	</style>
+</head>
+<body>
+	<article><p contenteditable spellcheck="false">AYZ</p></article>
+</body>
+</html>
