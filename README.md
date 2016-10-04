@@ -3,7 +3,7 @@
 Dependencies:
 
 - python 2.7 or higher
-- [fontTools 3.0](https://github.com/behdad/fonttools)
+- [fontTools 3.0](https://github.com/fonttools/fonttools)
 
 ## How to make OpenType-SVG fonts?
 

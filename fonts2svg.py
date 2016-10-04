@@ -45,12 +45,15 @@ import sys
 import re
 import getopt
 
+fontToolsURL = 'https://github.com/fonttools/fonttools'
+
 try:
 	from fontTools import ttLib, version
 	from fontTools.pens.basePen import BasePen
 	from fontTools.pens.transformPen import TransformPen
 except ImportError:
-	print("ERROR: FontTools Python module is not installed.", file=sys.stderr)
+	print("ERROR: FontTools Python module is not installed.\n\
+       Get the latest version at %s" % fontToolsURL, file=sys.stderr)
 	sys.exit(1)
 
 
@@ -62,7 +65,6 @@ def verStr2Num(verStr):
 	else:
 		return 0
 
-fontToolsURL = 'https://github.com/behdad/fonttools'
 minFTversion = '3.0'
 minVersion = verStr2Num(minFTversion)
 curVersion = verStr2Num(version)
