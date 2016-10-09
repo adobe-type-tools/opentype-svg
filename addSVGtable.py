@@ -50,29 +50,32 @@ from shutil import copy2
 fontToolsURL = 'https://github.com/fonttools/fonttools'
 
 try:
-	from fontTools import ttLib, version
+	from fontTools import ttLib
 except ImportError:
 	print("ERROR: FontTools Python module is not installed.\n\
        Get the latest version at %s" % fontToolsURL, file=sys.stderr)
 	sys.exit(1)
 
+try:
+	from fontTools.version import __version__ as ftversion
+except ImportError:
+	from fontTools import version as ftversion
 
 reVerStr = re.compile(r"^[0-9]+(\.[0-9]+)?")
 def verStr2Num(verStr):
 	v = reVerStr.match(verStr)
 	if v:
 		return eval(v.group(0))
-	else:
-		return 0
+	return 0
 
 minFTversion = '3.0'
 minVersion = verStr2Num(minFTversion)
-curVersion = verStr2Num(version)
+curVersion = verStr2Num(ftversion)
 
 if curVersion < minVersion:
 	print("ERROR: The FontTools module version must be %s or higher.\n\
        You have version %s installed.\n\
-       Get the latest version at %s" % (minFTversion, version, fontToolsURL),
+       Get the latest version at %s" % (minFTversion, ftversion, fontToolsURL),
 	file=sys.stderr)
 	sys.exit(1)
 
