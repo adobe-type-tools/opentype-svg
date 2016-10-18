@@ -51,15 +51,11 @@ fontToolsURL = 'https://github.com/fonttools/fonttools'
 
 try:
 	from fontTools import ttLib
+	from fontTools import version as ftversion
 except ImportError:
 	print("ERROR: FontTools Python module is not installed.\n\
        Get the latest version at %s" % fontToolsURL, file=sys.stderr)
 	sys.exit(1)
-
-try:
-	from fontTools.version import __version__ as ftversion
-except ImportError:
-	from fontTools import version as ftversion
 
 reVerStr = re.compile(r"^[0-9]+(\.[0-9]+)?")
 def verStr2Num(verStr):
