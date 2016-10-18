@@ -27,7 +27,10 @@ $ python addSVGtable.py -s fonts/SVGs fonts/Zebrawood.otf
 
 You can use **Step 2** without doing **Step 1**, but there are a few things you need to be aware of when using the `addSVGtable.py` script:
 
-* After the SVG files are saved with the authoring application (e.g. Adobe Illustrator, CorelDRAW!, Inkscape) they should be put thru a process that optimizes and cleans up the SVG code; this will slim down the file size while keeping the resulting artwork the same. For this step we recommend [SVG Cleaner](https://github.com/RazrFalcon/svgcleaner-gui/releases).
+* After the SVG files are saved with the authoring application (e.g. Adobe Illustrator, CorelDRAW!, Inkscape) they should be put thru a process that optimizes and cleans up the SVG code; this will slim down the file size while keeping the resulting artwork the same. For this step you can use one of these tools:
+	* [SVG Cleaner](https://github.com/RazrFalcon/svgcleaner-gui/releases) (GUI version)
+	* [SVG Cleaner](https://github.com/RazrFalcon/svgcleaner) (command line version)
+	* [SVG Optimizer](https://github.com/svg/svgo)
 
 * The script requires the SVG files to be named after the glyphs which they are meant to be associated with. For example, if the glyph in the font is named **ampersand**, the SVG file needs to be named `ampersand.svg`.
 
