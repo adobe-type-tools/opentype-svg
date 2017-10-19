@@ -195,7 +195,7 @@ def processFonts(fontPathsList, hexColorsList, outputFolderPath, options):
 	# Generate the SVGs
 	for gName in glyphNamesList:
 		svgStr = u"""\
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 %s %s">\n""" % (upm, upm)
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -%s %s %s">\n""" % (upm, upm, upm)
 
 		for index, gSet in enumerate(glyphSetsList):
 			# Skip glyphs that don't exist in the current font,
@@ -204,7 +204,7 @@ def processFonts(fontPathsList, hexColorsList, outputFolderPath, options):
 				continue
 
 			pen = SVGPen(gSet)
-			tpen = TransformPen(pen, (1.0, 0.0, 0.0, -1.0, 0.0, upm))
+			tpen = TransformPen(pen, (1.0, 0.0, 0.0, -1.0, 0.0, 0.0))
 			glyph = gSet[gName]
 			glyph.draw(tpen)
 			d = pen.d

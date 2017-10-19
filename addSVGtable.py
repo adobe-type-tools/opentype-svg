@@ -33,7 +33,7 @@ Options:
   -s  path to folder containing SVG files.
       (the file names MUST match the names of the glyphs they're meant to be associated with.)
   -m  do not make a copy of the input font.
-  -v  'viewBox' adjustment value.
+  -k  do not strip the 'viewBox' parameter.
   -w  generate WOFF and WOFF2 formats.
   -x  comma-separated list of glyph names to exclude.
   -z  compress the SVG table.
@@ -101,25 +101,15 @@ def setIDvalue(data, gid):
 
 # The value of the viewBox attribute is a list of four numbers min-x, min-y, width and
 # height, separated by whitespace and/or a comma
-reViewBox = re.compile(r"(<svg.+?viewBox=[\"|\'])([-\d,. ]+)([\"|\'].+?>)", re.DOTALL)
+reViewBox = re.compile(r"(<svg.+?)(\s*viewBox=[\"|\'](?:[-\d,. ]+)[\"|\'])(.+?>)", re.DOTALL)
 
-def adjustViewBox(svgItemData, viewBoxAdjust):
+def stripViewBox(svgItemData):
 	"""
-	Replaces the 2nd number (min-y) by the maximum of width and height (3rd & 4th numbers).
-	If a number is provided, it's added to the value of min-y.
+	Removes the viewBox parameter from the <svg> element.
 	"""
 	vb = reViewBox.search(svgItemData)
 	if vb:
-		vbValuesStr = vb.group(2)
-		vbValuesLst = vbValuesStr.replace(',', ' ').split()
-		assert len(vbValuesLst) == 4, "The viewBox value has %s numbers instead of 4." % \
-		                                                                  len(vbValuesLst)
-		vbValuesLst = [eval(v) for v in vbValuesLst]
-		if viewBoxAdjust is not None:
-			vbValuesLst[1] = vbValuesLst[1] + viewBoxAdjust
-		else:
-			vbValuesLst[1] = max(vbValuesLst[2:])
-		svgItemData = reViewBox.sub(r"\g<1>%s\g<3>" % ' '.join(map(str, vbValuesLst)), svgItemData)
+		svgItemData = reViewBox.sub(r"\g<1>\g<3>", svgItemData)
 	return svgItemData
 
 
@@ -194,8 +184,9 @@ def processFont(fontPath, svgFilePathsList, options):
 		# Set id value
 		svgItemData = setIDvalue(svgItemData, gid)
 
-		# Adjust viewBox (to shift artwork up or down)
-		svgItemData = adjustViewBox(svgItemData, options.viewBoxAdjust)
+		# Remove the viewBox parameter
+		if options.stripViewBox:
+			svgItemData = stripViewBox(svgItemData)
 
 		# Clean-up SVG document
 		svgItemData = cleanupSVGdoc(svgItemData)
@@ -305,7 +296,7 @@ class Options(object):
 	generateWOFFs = False
 	compressSVGs = False
 	glyphNamesToExclude = []
-	viewBoxAdjust = None
+	stripViewBox = True
 
 	def __init__(self, rawOptions):
 		for option, value in rawOptions:
@@ -318,13 +309,8 @@ class Options(object):
 				self.generateWOFFs = True
 			elif option == "-z":
 				self.compressSVGs = True
-			elif option == "-v":
-				if value:
-					try:
-						self.viewBoxAdjust = eval(value)
-					except:
-						print("ERROR: The viewBox adjust value must be a number.", file=sys.stderr)
-						sys.exit(1)
+			elif option == "-k":
+				self.stripViewBox = False
 			elif option == "-x":
 				if value:
 					self.glyphNamesToExclude.extend(value.split(','))
@@ -340,7 +326,7 @@ class Options(object):
 
 def parseOptions(args):
 	try:
-		rawOptions, files = getopt.getopt(args, "hms:v:wx:z")
+		rawOptions, files = getopt.getopt(args, "hkms:wx:z")
 	except getopt.GetoptError as err:
 		print("ERROR:", err, file=sys.stderr)
 		sys.exit(2)
