@@ -28,43 +28,9 @@ import re
 import getopt
 from shutil import copy2
 
-fontToolsURL = 'https://github.com/fonttools/fonttools'
+from shared_utils import validateFontPaths, readFile
 
-try:
-    from fontTools import ttLib
-    from fontTools import version as ftversion
-except ImportError:
-    print("ERROR: FontTools Python module is not installed.\n\
-       Get the latest version at %s" % fontToolsURL, file=sys.stderr)
-    sys.exit(1)
-
-reVerStr = re.compile(r"^[0-9]+(\.[0-9]+)?")
-
-
-def verStr2Num(verStr):
-    v = reVerStr.match(verStr)
-    if v:
-        return eval(v.group(0))
-    return 0
-
-
-minFTversion = '3.0'
-minVersion = verStr2Num(minFTversion)
-curVersion = verStr2Num(ftversion)
-
-if curVersion < minVersion:
-    print("ERROR: The FontTools module version must be %s or higher.\n\
-       You have version %s installed.\n\
-       Get the latest version at %s" % (minFTversion, ftversion, fontToolsURL),
-          file=sys.stderr)
-    sys.exit(1)
-
-
-def readFile(filePath):
-    f = open(filePath, "rt")
-    data = f.read()
-    f.close()
-    return data
+from fontTools import ttLib
 
 
 def getGlyphNameFromFileName(filePath):
@@ -262,29 +228,6 @@ def validateSVGfiles(svgFilePathsList):
     return validatedPaths
 
 
-def getFontFormat(fontFilePath):
-    f = open(fontFilePath, "rb")
-    head = f.read(4).decode()
-    f.close()
-    if head == "OTTO":
-        return "OTF"
-    elif head in ("\0\1\0\0", "true"):
-        return "TTF"
-    return None
-
-
-def validateFontPaths(pathsList):
-    validatedPathsList = []
-    for path in pathsList:
-        path = os.path.realpath(path)
-        if os.path.isfile(path) and getFontFormat(path) in ['OTF', 'TTF']:
-            validatedPathsList.append(path)
-        else:
-            print("ERROR: %s is not a valid font file path." % path,
-                  file=sys.stderr)
-    return validatedPathsList
-
-
 class Options(object):
     svgFolderPath = None
     makeFontCopy = True
@@ -330,17 +273,17 @@ def parseOptions(args):
     return validateFontPaths(files), Options(rawOptions)
 
 
-def run():
+def main(args=None):
     fontPathsList, options = parseOptions(sys.argv[1:])
 
     if not len(fontPathsList):
         print("ERROR: No valid font file path was provided.", file=sys.stderr)
-        sys.exit(1)
+        return 1
 
     if not options.svgFolderPath:
         print("ERROR: Path to folder containing SVG files was not provided.",
               file=sys.stderr)
-        sys.exit(1)
+        return 1
     else:
         svgFilePathsList = []
         # Support nested folders
@@ -353,13 +296,10 @@ def run():
 
     if not svgFilePathsList:
         print("No SVG files were found.", file=sys.stdout)
-        sys.exit(1)
+        return 1
 
     processFont(fontPathsList[0], svgFilePathsList, options)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 1:
-        print(__doc__)
-    else:
-        run()
+    sys.exit(main())

@@ -26,38 +26,11 @@ import sys
 import re
 import getopt
 
-fontToolsURL = 'https://github.com/fonttools/fonttools'
+from shared_utils import validateFontPaths, writeFile
 
-try:
-    from fontTools import ttLib
-    from fontTools import version as ftversion
-    from fontTools.pens.basePen import BasePen
-    from fontTools.pens.transformPen import TransformPen
-except ImportError:
-    print("ERROR: FontTools Python module is not installed.\n\
-       Get the latest version at %s" % fontToolsURL, file=sys.stderr)
-    sys.exit(1)
-
-reVerStr = re.compile(r"^[0-9]+(\.[0-9]+)?")
-
-
-def verStr2Num(verStr):
-    v = reVerStr.match(verStr)
-    if v:
-        return eval(v.group(0))
-    return 0
-
-
-minFTversion = '3.0'
-minVersion = verStr2Num(minFTversion)
-curVersion = verStr2Num(ftversion)
-
-if curVersion < minVersion:
-    print("ERROR: The FontTools module version must be %s or higher.\n\
-       You have version %s installed.\n\
-       Get the latest version at %s" % (minFTversion, ftversion, fontToolsURL),
-          file=sys.stderr)
-    sys.exit(1)
+from fontTools import ttLib
+from fontTools.pens.basePen import BasePen
+from fontTools.pens.transformPen import TransformPen
 
 
 class SVGPen(BasePen):
@@ -106,12 +79,6 @@ class SVGPen(BasePen):
 
     def _isInt(self, tup):
         return [int(flt) if (flt).is_integer() else flt for flt in tup]
-
-
-def writeFile(fileName, data):
-    outfile = open(fileName, 'w')
-    outfile.write(data)
-    outfile.close()
 
 
 def processFonts(fontPathsList, hexColorsList, outputFolderPath, options):
@@ -248,29 +215,6 @@ def processFonts(fontPathsList, hexColorsList, outputFolderPath, options):
     print("%s SVG files saved." % filesSaved, file=sys.stdout)
 
 
-def getFontFormat(fontFilePath):
-    f = open(fontFilePath, "rb")
-    head = f.read(4).decode()
-    f.close()
-    if head == "OTTO":
-        return "OTF"
-    elif head in ("\0\1\0\0", "true"):
-        return "TTF"
-    return None
-
-
-def validateFontPaths(pathsList):
-    validatedPathsList = []
-    for path in pathsList:
-        path = os.path.realpath(path)
-        if os.path.isfile(path) and getFontFormat(path) in ['OTF', 'TTF']:
-            validatedPathsList.append(path)
-        else:
-            print("ERROR: %s is not a valid font file path." % path,
-                  file=sys.stderr)
-    return validatedPathsList
-
-
 reHexColor = re.compile(r"^(?=[a-fA-F0-9]*$)(?:.{6}|.{8})$")
 
 
@@ -331,13 +275,13 @@ def parseOptions(args):
     return validateFontPaths(files), Options(rawOptions)
 
 
-def run():
+def main(args=None):
     fontPathsList, options = parseOptions(sys.argv[1:])
 
     if not len(fontPathsList):
         print("ERROR: No valid font file paths were provided.",
               file=sys.stderr)
-        sys.exit(1)
+        return 1
 
     hexColorsList = options.colorsList
 
@@ -367,7 +311,4 @@ def run():
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 1:
-        print(__doc__)
-    else:
-        run()
+    sys.exit(main())
