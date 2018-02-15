@@ -6,22 +6,14 @@ Module that contains shared functionality.
 
 from __future__ import print_function
 
-import re
 import os
 import sys
+
+from distutils.version import LooseVersion
 
 
 FONTTOOLS_URL = 'https://github.com/fonttools/fonttools'
 MIN_FT_VERSION = '3.0'
-
-RE_VERSION_STRING = re.compile(r"^[0-9]+(\.[0-9]+)?")
-
-
-def _verStr2Num(verStr):
-    v = RE_VERSION_STRING.match(verStr)
-    if v:
-        return eval(v.group(0))
-    return 0
 
 
 try:
@@ -32,10 +24,7 @@ except ImportError:
           file=sys.stderr)
     sys.exit(1)
 
-minVersion = _verStr2Num(MIN_FT_VERSION)
-curVersion = _verStr2Num(ftversion)
-
-if curVersion < minVersion:
+if LooseVersion(ftversion) < LooseVersion(MIN_FT_VERSION):
     print("ERROR: The FontTools module version must be {} or higher.\n"
           "You have version {} installed.\n"
           "Get the latest version at {}".format(
