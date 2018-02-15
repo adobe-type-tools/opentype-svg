@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-from __future__ import division, print_function
+# Copyright 2016 Adobe. All rights reserved.
 
-__doc__ = """\
+"""
 Generates a set of SVG glyph files from one or more fonts and hex colors
 for each of them. The fonts' format can be either OpenType or TrueType.
 
@@ -19,12 +19,14 @@ Options:
   -u  do union (instead of intersection) of the fonts' glyph sets.
 """
 
-# ---------------------------------------------------------------------------
+from __future__ import division, print_function
 
-import os
-import sys
-import re
+__version__ = '1.0.0'
+
 import getopt
+import os
+import re
+import sys
 
 from shared_utils import validateFontPaths, writeFile
 
@@ -42,7 +44,7 @@ class SVGPen(BasePen):
 
     def _moveTo(self, pt):
         ptx, pty = self._isInt(pt)
-        self.d += u'M%s %s' % (ptx, pty)
+        self.d += u'M{} {}'.format(ptx, pty)
         self._lastX, self._lastY = pt
 
     def _lineTo(self, pt):
@@ -50,24 +52,25 @@ class SVGPen(BasePen):
         if (ptx, pty) == (self._lastX, self._lastY):
             return
         elif ptx == self._lastX:
-            self.d += u'V%s' % (pty)
+            self.d += u'V{}'.format(pty)
         elif pty == self._lastY:
-            self.d += u'H%s' % (ptx)
+            self.d += u'H{}'.format(ptx)
         else:
-            self.d += u'L%s %s' % (ptx, pty)
+            self.d += u'L{} {}'.format(ptx, pty)
         self._lastX, self._lastY = pt
 
     def _curveToOne(self, pt1, pt2, pt3):
         pt1x, pt1y = self._isInt(pt1)
         pt2x, pt2y = self._isInt(pt2)
         pt3x, pt3y = self._isInt(pt3)
-        self.d += u'C%s %s %s %s %s %s' % (pt1x, pt1y, pt2x, pt2y, pt3x, pt3y)
+        self.d += u'C{} {} {} {} {} {}'.format(pt1x, pt1y, pt2x, pt2y,
+                                               pt3x, pt3y)
         self._lastX, self._lastY = pt3
 
     def _qCurveToOne(self, pt1, pt2):
         pt1x, pt1y = self._isInt(pt1)
         pt2x, pt2y = self._isInt(pt2)
-        self.d += u'Q%s %s %s %s' % (pt1x, pt1y, pt2x, pt2y)
+        self.d += u'Q{} {} {} {}'.format(pt1x, pt1y, pt2x, pt2y)
         self._lastX, self._lastY = pt2
 
     def _closePath(self):
@@ -151,7 +154,7 @@ def processFonts(fontPathsList, hexColorsList, outputFolderPath, options):
     # Generate the SVGs
     for gName in glyphNamesList:
         svgStr = (u"""<svg xmlns="http://www.w3.org/2000/svg" """
-                  u"""viewBox="0 -%s %s %s">\n""" % (upm, upm, upm))
+                  u"""viewBox="0 -{} {} {}">\n""".format(upm, upm, upm))
 
         for index, gSet in enumerate(glyphSetsList):
             # Skip glyphs that don't exist in the current font,
@@ -174,9 +177,9 @@ def processFonts(fontPathsList, hexColorsList, outputFolderPath, options):
                 opcHex = hex[6:]
                 hex = hex[:6]
                 if opcHex.lower() != 'ff':
-                    opc = ' opacity="%.2f"' % (int(opcHex, 16) / 255)
+                    opc = ' opacity="{:.2f}"'.format(int(opcHex, 16) / 255)
 
-            svgStr += u'\t<path%s fill="#%s" d="%s"/>\n' % (opc, hex, d)
+            svgStr += u'\t<path{} fill="#{}" d="{}"/>\n'.format(opc, hex, d)
         svgStr += u'</svg>'
 
         # Skip saving files that have no paths
@@ -212,7 +215,7 @@ def processFonts(fontPathsList, hexColorsList, outputFolderPath, options):
 
     if filesSaved == 0:
         filesSaved = 'No'
-    print("%s SVG files saved." % filesSaved, file=sys.stdout)
+    print("{} SVG files saved.".format(filesSaved), file=sys.stdout)
 
 
 reHexColor = re.compile(r"^(?=[a-fA-F0-9]*$)(?:.{6}|.{8})$")
@@ -251,17 +254,17 @@ class Options(object):
                     if os.path.isdir(path):
                         self.outputFolderPath = path
                     else:
-                        print("ERROR: %s is not a valid folder path." % path,
-                              file=sys.stderr)
+                        print("ERROR: {} is not a valid folder path.".format(
+                            path), file=sys.stderr)
                         sys.exit(1)
 
     def validateRawColorsStr(self, rawColorsStr):
         rawColorsList = rawColorsStr.split(',')
-        for hex in rawColorsList:
-            if reHexColor.match(hex):
-                self.colorsList.append(hex)
+        for hex_str in rawColorsList:
+            if reHexColor.match(hex_str):
+                self.colorsList.append(hex_str)
             else:
-                print("ERROR: %s is not a valid hex color." % hex,
+                print("ERROR: {} is not a valid hex color.".format(hex_str),
                       file=sys.stderr)
 
 
@@ -291,12 +294,12 @@ def main(args=None):
     if len(hexColorsList) < len(fontPathsList):
         numAddCol = len(fontPathsList) - len(hexColorsList)
         hexColorsList.extend(['000000'] * numAddCol)
-        print("WARNING: The list of colors was extended with %s #000000 "
-              "value(s)." % numAddCol, file=sys.stderr)
+        print("WARNING: The list of colors was extended with {} #000000 "
+              "value(s).".format(numAddCol), file=sys.stderr)
     elif len(hexColorsList) > len(fontPathsList):
         numXtrCol = len(hexColorsList) - len(fontPathsList)
-        print("WARNING: The list of colors got the last %s value(s) truncated:"
-              " %s" % (numXtrCol, ' '.join(hexColorsList[-numXtrCol:])),
+        print("WARNING: The list of colors got the last {} value(s) truncated:"
+              " {}".format(numXtrCol, ' '.join(hexColorsList[-numXtrCol:])),
               file=sys.stderr)
         del hexColorsList[len(fontPathsList):]
 

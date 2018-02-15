@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
+# Copyright 2016 Adobe. All rights reserved.
 
-__doc__ = """\
+"""
 Saves the contents of a font's SVG table as individual SVG files.
 The font's format can be either OpenType, TrueType, WOFF, or WOFF2.
 
@@ -16,12 +16,14 @@ Options:
   -x  comma-separated list of glyph names to exclude.
 """
 
-# ---------------------------------------------------------------------------
+from __future__ import division, print_function
 
-import os
-import sys
-import re
+__version__ = '1.0.0'
+
 import getopt
+import os
+import re
+import sys
 
 from shared_utils import validateFontPaths, writeFile
 
@@ -48,15 +50,15 @@ def processFont(fontPath, outputFolderPath, options):
     svgTag = 'SVG '
 
     if svgTag not in font:
-        print("ERROR: The font does not have the %s table." % svgTag.strip(),
-              file=sys.stderr)
+        print("ERROR: The font does not have the {} table.".format(
+            svgTag.strip()), file=sys.stderr)
         sys.exit(1)
 
     svgTable = font[svgTag]
 
     if not len(svgTable.docList):
-        print("ERROR: The %s table has no data that can be output." %
-              svgTag.strip(), file=sys.stderr)
+        print("ERROR: The {} table has no data that can be output.".format(
+            svgTag.strip()), file=sys.stderr)
         sys.exit(1)
 
     # Define the list of glyph names to convert to SVG
@@ -109,13 +111,13 @@ def processFont(fontPath, outputFolderPath, options):
             try:
                 gName = glyphOrder[startGID]
             except IndexError:
-                gName = "_unnamed%s" % unnamedNum
+                gName = "_unnamed{}".format(unnamedNum)
                 glyphNamesList.append(gName)
                 unnamedNum += 1
-                print("WARNING: The SVG table references a glyph ID (#%s) "
+                print("WARNING: The SVG table references a glyph ID (#{}) "
                       "which the font does not contain.\n"
-                      "         The artwork will be saved as '%s.svg'." %
-                      (startGID, gName), file=sys.stderr)
+                      "         The artwork will be saved as '{}.svg'.".format(
+                          (startGID, gName)), file=sys.stderr)
 
             if gName not in glyphNamesList or gName in glyphNamesToSkipList:
                 startGID += 1
@@ -154,7 +156,7 @@ def processFont(fontPath, outputFolderPath, options):
 
     if filesSaved == 0:
         filesSaved = 'No'
-    print("%s SVG files saved." % filesSaved, file=sys.stdout)
+    print("{} SVG files saved.".format(filesSaved), file=sys.stdout)
 
 
 class Options(object):
@@ -182,8 +184,8 @@ class Options(object):
                     if os.path.isdir(path):
                         self.outputFolderPath = path
                     else:
-                        print("ERROR: %s is not a valid folder path." % path,
-                              file=sys.stderr)
+                        print("ERROR: {} is not a valid folder path.".format(
+                            path), file=sys.stderr)
                         sys.exit(1)
 
 

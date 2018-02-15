@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
+# Copyright 2016 Adobe. All rights reserved.
 
-__doc__ = """\
+"""
 Adds an SVG table to a font, using SVG files provided.
 The font format can be either OpenType or TrueType.
 
@@ -20,12 +20,14 @@ Options:
   -z  compress the SVG table.
 """
 
-# ---------------------------------------------------------------------------
+from __future__ import print_function
 
-import os
-import sys
-import re
+__version__ = '1.0.0'
+
 import getopt
+import os
+import re
+import sys
 from shutil import copy2
 
 from shared_utils import validateFontPaths, readFile
@@ -44,15 +46,16 @@ reIDvalue = re.compile(r"<svg[^>]+?(id=\".*?\").+?>", re.DOTALL)
 def setIDvalue(data, gid):
     id = reIDvalue.search(data)
     if id:
-        newData = re.sub(id.group(1), 'id="glyph%s"' % gid, data)
+        newData = re.sub(id.group(1), 'id="glyph{}"'.format(gid), data)
     else:
-        newData = re.sub('<svg', '<svg id="glyph%s"' % gid, data)
+        newData = re.sub('<svg', '<svg id="glyph{}"'.format(gid), data)
     return newData
 
 
 # The value of the viewBox attribute is a list of four numbers min-x, min-y,
 # width and height, separated by whitespace and/or a comma
-reViewBox = re.compile(r"(<svg.+?)(\s*viewBox=[\"|\'](?:[-\d,. ]+)[\"|\'])(.+?>)", re.DOTALL)
+reViewBox = re.compile(
+    r"(<svg.+?)(\s*viewBox=[\"|\'](?:[-\d,. ]+)[\"|\'])(.+?>)", re.DOTALL)
 
 
 def stripViewBox(svgItemData):
@@ -123,13 +126,14 @@ def processFont(fontPath, svgFilePathsList, options):
         try:
             gid = font.getGlyphID(gName)
         except KeyError:
-            print("WARNING: Could not find a glyph named %s in the font %s" %
-                  (gName, os.path.split(fontPath)[1]), file=sys.stderr)
+            print("WARNING: Could not find a glyph named {} in the font "
+                  "{}".format(gName, os.path.split(fontPath)[1]),
+                  file=sys.stderr)
             continue
 
         if gName in gNamesSeenAlreadyList:
-            print("WARNING: Skipped a duplicate file named %s.svg at %s" %
-                  (gName, svgFilePath), file=sys.stderr)
+            print("WARNING: Skipped a duplicate file named {}.svg at "
+                  "{}".format(gName, svgFilePath), file=sys.stderr)
             continue
         else:
             gNamesSeenAlreadyList.append(gName)
@@ -180,8 +184,8 @@ def processFont(fontPath, svgFilePathsList, options):
 
     font.close()
 
-    print("%s SVG glyphs were successfully added to %s" %
-          (svgGlyphsAdded, os.path.split(fontPath)[1]), file=sys.stdout)
+    print("{} SVG glyphs were successfully added to {}".format(
+        svgGlyphsAdded, os.path.split(fontPath)[1]), file=sys.stdout)
 
 
 reSVGelement = re.compile(r"<svg.+?>.+?</svg>", re.DOTALL)
@@ -206,21 +210,22 @@ def validateSVGfiles(svgFilePathsList):
         if not fileName.lower().endswith('.svg'):
             continue
 
-        assert os.path.isfile(filePath), "Not a valid file path: %s" % filePath
+        assert os.path.isfile(filePath), "Not a valid file path: {}".format(
+            filePath)
         data = readFile(filePath)
 
         # Find <svg> blob
         svg = reSVGelement.search(data)
         if not svg:
             print("WARNING: Could not find <svg> element in the file. "
-                  "Skiping %s" % (filePath))
+                  "Skiping {}".format(filePath))
             continue
 
         # Warn about <text> elements
         text = reTEXTelement.search(data)
         if text:
             print("WARNING: Found <text> element in the file. "
-                  "Skiping %s" % (filePath))
+                  "Skiping {}".format(filePath))
             continue
 
         validatedPaths.append(filePath)
@@ -258,8 +263,8 @@ class Options(object):
                     if os.path.isdir(path):
                         self.svgFolderPath = path
                     else:
-                        print("ERROR: %s is not a valid folder path." % path,
-                              file=sys.stderr)
+                        print("ERROR: {} is not a valid folder path.".format(
+                            path), file=sys.stderr)
                         sys.exit(1)
 
 

@@ -69,6 +69,6 @@ def validateFontPaths(pathsList):
            ['OTF', 'TTF', 'WOFF', 'WOFF2']):
             validatedPathsList.append(path)
         else:
-            print("ERROR: %s is not a valid font file path." % path,
+            print("ERROR: {} is not a valid font file path.".format(path),
                   file=sys.stderr)
     return validatedPathsList
