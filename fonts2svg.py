@@ -4,35 +4,23 @@
 
 """
 Generates a set of SVG glyph files from one or more fonts and hex colors
-for each of them. The fonts' format can be either OpenType or TrueType.
-
-Usage:
-  python fonts2svg.py -c RRGGBB[,RRGGBB...] font [font...]
-
-Options:
-  -c  comma-separated list of hex colors in RRGGBBAA format.
-      (The alpha value 'AA' is optional)
-  -o  path to folder for outputting the SVG files to.
-  -g  comma-separated list of glyph names to make SVG files from.
-  -a  comma-separated list of glyph names to add.
-  -x  comma-separated list of glyph names to exclude.
-  -u  do union (instead of intersection) of the fonts' glyph sets.
+for each of them. The fonts' format can be either OpenType, TrueType, WOFF,
+or WOFF2.
 """
 
 from __future__ import division, print_function
 
 __version__ = '1.0.0'
 
-import getopt
+import argparse
 import os
 import re
 import sys
 
-from shared_utils import (validate_font_paths, write_file,
-                          split_comma_sequence, final_message,
+from shared_utils import (write_file, final_message, get_output_folder_path,
+                          validate_font_paths, split_comma_sequence,
                           create_folder, create_nested_folder,
-                          get_gnames_to_save_in_nested_folder,
-                          SVG_FOLDER_NAME)
+                          get_gnames_to_save_in_nested_folder,)
 
 from fontTools import ttLib
 from fontTools.pens.basePen import BasePen
@@ -88,12 +76,12 @@ class SVGPen(BasePen):
         return [int(flt) if (flt).is_integer() else flt for flt in tup]
 
 
-def processFonts(fontPathsList, hexColorsList, outputFolderPath, options):
+def processFonts(font_paths_list, hex_colors_list, outputFolderPath, options):
     glyphSetsList = []
     allGlyphNamesList = []
 
     # Load the fonts and collect their glyph sets
-    for fontPath in fontPathsList:
+    for fontPath in font_paths_list:
         font = ttLib.TTFont(fontPath)
         gSet = font.getGlyphSet()
         glyphSetsList.append(gSet)
@@ -103,18 +91,18 @@ def processFonts(fontPathsList, hexColorsList, outputFolderPath, options):
     assert(len(glyphSetsList) > 0)
 
     # Define the list of glyph names to convert to SVG
-    if options.glyphNamesToGenerate:
-        glyphNamesList = sorted(options.glyphNamesToGenerate)
+    if options.gnames_to_generate:
+        glyphNamesList = sorted(options.gnames_to_generate)
     else:
-        if options.glyphsetsUnion:
+        if options.glyphsets_union:
             glyphNamesList = sorted(
                 list(set.union(*map(set, allGlyphNamesList))))
         else:
             glyphNamesList = sorted(
                 list(set.intersection(*map(set, allGlyphNamesList))))
             # Extend the list with additional glyph names
-            if options.glyphNamesToAdd:
-                glyphNamesList.extend(options.glyphNamesToAdd)
+            if options.gnames_to_add:
+                glyphNamesList.extend(options.gnames_to_add)
                 # Remove any duplicates and sort
                 glyphNamesList = sorted(list(set(glyphNamesList)))
 
@@ -126,8 +114,8 @@ def processFonts(fontPathsList, hexColorsList, outputFolderPath, options):
 
     # Define the list of glyph names to skip
     glyphNamesToSkipList = [".notdef"]
-    if options.glyphNamesToExclude:
-        glyphNamesToSkipList.extend(options.glyphNamesToExclude)
+    if options.gnames_to_exclude:
+        glyphNamesToSkipList.extend(options.gnames_to_exclude)
 
     # Determine which glyph names need to be saved in a nested folder
     glyphNamesToSaveInNestedFolder = get_gnames_to_save_in_nested_folder(
@@ -136,7 +124,7 @@ def processFonts(fontPathsList, hexColorsList, outputFolderPath, options):
     # Gather the fonts' UPM. For simplicity, it's assumed that all fonts have
     # the same UPM value. If fetching the UPM value fails, default to 1000.
     try:
-        upm = ttLib.TTFont(fontPathsList[0])['head'].unitsPerEm
+        upm = ttLib.TTFont(font_paths_list[0])['head'].unitsPerEm
     except KeyError:
         upm = 1000
 
@@ -163,15 +151,16 @@ def processFonts(fontPathsList, hexColorsList, outputFolderPath, options):
             if not len(d):
                 continue
 
-            hex = hexColorsList[index]
+            hex_str = hex_colors_list[index]
             opc = ''
-            if len(hex) != 6:
-                opcHex = hex[6:]
-                hex = hex[:6]
+            if len(hex_str) != 6:
+                opcHex = hex_str[6:]
+                hex_str = hex_str[:6]
                 if opcHex.lower() != 'ff':
                     opc = ' opacity="{:.2f}"'.format(int(opcHex, 16) / 255)
 
-            svgStr += u'\t<path{} fill="#{}" d="{}"/>\n'.format(opc, hex, d)
+            svgStr += u'\t<path{} fill="#{}" d="{}"/>\n'.format(
+                opc, hex_str, d)
         svgStr += u'</svg>'
 
         # Skip saving files that have no paths
@@ -197,99 +186,113 @@ def processFonts(fontPathsList, hexColorsList, outputFolderPath, options):
     final_message(filesSaved)
 
 
-reHexColor = re.compile(r"^(?=[a-fA-F0-9]*$)(?:.{6}|.{8})$")
+RE_HEXCOLOR = re.compile(r"^(?=[a-fA-F0-9]*$)(?:.{6}|.{8})$")
 
 
-class Options(object):
-    colorsList = []
-    outputFolderPath = None
-    glyphsetsUnion = False
-    glyphNamesToGenerate = None
-    glyphNamesToAdd = None
-    glyphNamesToExclude = None
-
-    def __init__(self, rawOptions):
-        for option, value in rawOptions:
-            if option == "-h":
-                print(__doc__)
-                sys.exit(0)
-            elif option == "-u":
-                self.glyphsetsUnion = True
-            elif option == "-c":
-                if value:
-                    self.validateRawColorsStr(value)
-            elif option == "-g":
-                if value:
-                    self.glyphNamesToGenerate = value.split(',')
-            elif option == "-a":
-                if value:
-                    self.glyphNamesToAdd = value.split(',')
-            elif option == "-x":
-                if value:
-                    self.glyphNamesToExclude = value.split(',')
-            elif option == "-o":
-                if value:
-                    path = os.path.realpath(value)
-                    if os.path.isdir(path):
-                        self.outputFolderPath = path
-                    else:
-                        print("ERROR: {} is not a valid folder path.".format(
-                            path), file=sys.stderr)
-                        sys.exit(1)
-
-    def validateRawColorsStr(self, rawColorsStr):
-        rawColorsList = rawColorsStr.split(',')
-        for hex_str in rawColorsList:
-            if reHexColor.match(hex_str):
-                self.colorsList.append(hex_str)
-            else:
-                print("ERROR: {} is not a valid hex color.".format(hex_str),
-                      file=sys.stderr)
+def validate_hex_values(hex_str):
+    hex_values = hex_str.split(',')
+    for hex_val in hex_values:
+        if not RE_HEXCOLOR.match(hex_val):
+            raise argparse.ArgumentTypeError(
+                "{} is not a valid hex color.".format(hex_val))
+    return hex_values
 
 
-def parseOptions(args):
-    try:
-        rawOptions, files = getopt.getopt(args, "a:c:g:ho:ux:")
-    except getopt.GetoptError as err:
-        print("ERROR:", err, file=sys.stderr)
-        sys.exit(2)
+def get_options(args):
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawTextHelpFormatter,
+        description=__doc__
+    )
+    parser.add_argument(
+        '--version',
+        action='version',
+        version=__version__
+    )
+    parser.add_argument(
+        '-c',
+        metavar='HEX_VALUES',
+        dest='colors_list',
+        type=validate_hex_values,
+        default=[],
+        help='comma-separated list of hex colors in RRGGBBAA format.\n'
+             'The alpha value (AA) is optional.'
+    )
+    parser.add_argument(
+        '-o',
+        metavar='FOLDER_PATH',
+        dest='output_folder_path',
+        help='path to folder for outputting the SVG files to.'
+    )
+    parser.add_argument(
+        '-g',
+        metavar='GLYPH_NAMES',
+        dest='gnames_to_generate',
+        type=split_comma_sequence,
+        default=[],
+        help='comma-separated sequence of glyph names to make SVG files from.'
+    )
+    parser.add_argument(
+        '-a',
+        metavar='GLYPH_NAMES',
+        dest='gnames_to_add',
+        type=split_comma_sequence,
+        default=[],
+        help='comma-separated sequence of glyph names to add.'
+    )
+    parser.add_argument(
+        '-x',
+        metavar='GLYPH_NAMES',
+        dest='gnames_to_exclude',
+        type=split_comma_sequence,
+        default=[],
+        help='comma-separated sequence of glyph names to exclude.'
+    )
+    parser.add_argument(
+        '-u',
+        action='store_true',
+        dest='glyphsets_union',
+        help="do union (instead of intersection) of the fonts' glyph sets."
+    )
+    parser.add_argument(
+        'input_paths',
+        metavar='FONT',
+        nargs='+',
+        help='OTF/TTF/WOFF/WOFF2 font file.',
+    )
+    options = parser.parse_args(args)
 
-    return validate_font_paths(files), Options(rawOptions)
+    options.font_paths_list = validate_font_paths(options.input_paths)
+    return options
 
 
 def main(args=None):
-    fontPathsList, options = parseOptions(sys.argv[1:])
+    opts = get_options(args)
 
-    if not len(fontPathsList):
-        print("ERROR: No valid font file paths were provided.",
-              file=sys.stderr)
+    if not opts.font_paths_list:
         return 1
 
-    hexColorsList = options.colorsList
+    font_paths_list = opts.font_paths_list
+    hex_colors_list = opts.colors_list
 
     # Confirm that the number of colors is the same as the fonts. If it's not,
     # extend the list of colors using SVG's default color (black), or trim the
     # list of colors.
-    if len(hexColorsList) < len(fontPathsList):
-        numAddCol = len(fontPathsList) - len(hexColorsList)
-        hexColorsList.extend(['000000'] * numAddCol)
+    if len(hex_colors_list) < len(font_paths_list):
+        num_add_col = len(font_paths_list) - len(hex_colors_list)
+        hex_colors_list.extend(['000000'] * num_add_col)
         print("WARNING: The list of colors was extended with {} #000000 "
-              "value(s).".format(numAddCol), file=sys.stderr)
-    elif len(hexColorsList) > len(fontPathsList):
-        numXtrCol = len(hexColorsList) - len(fontPathsList)
+              "value(s).".format(num_add_col), file=sys.stderr)
+    elif len(hex_colors_list) > len(font_paths_list):
+        num_xtr_col = len(hex_colors_list) - len(font_paths_list)
+        del hex_colors_list[len(font_paths_list):]
         print("WARNING: The list of colors got the last {} value(s) truncated:"
-              " {}".format(numXtrCol, ' '.join(hexColorsList[-numXtrCol:])),
-              file=sys.stderr)
-        del hexColorsList[len(fontPathsList):]
+              " {}".format(num_xtr_col, ' '.join(
+                  hex_colors_list[-num_xtr_col:])), file=sys.stderr)
 
-    # If the path to the output folder was not provided, create a folder
-    # named 'SVGs' in the same directory where the first font is.
-    outputFolderPath = options.outputFolderPath
-    if not outputFolderPath:
-        outputFolderPath = os.path.join(os.path.dirname(fontPathsList[0]),
-                                        SVG_FOLDER_NAME)
+    output_folder_path = get_output_folder_path(opts.output_folder_path,
+                                                font_paths_list[0])
 
-    processFonts(fontPathsList, hexColorsList, outputFolderPath, options)
+    processFonts(font_paths_list, hex_colors_list, output_folder_path, opts)
 
 
 if __name__ == "__main__":

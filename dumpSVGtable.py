@@ -5,22 +5,13 @@
 """
 Saves the contents of a font's SVG table as individual SVG files.
 The font's format can be either OpenType, TrueType, WOFF, or WOFF2.
-
-Usage:
-  python dumpSVGtable.py [options] font
-
-Options:
-  -o  path to folder for outputting the SVG files to.
-  -r  reset viewBox values.
-  -g  comma-separated list of glyph names to make SVG files from.
-  -x  comma-separated list of glyph names to exclude.
 """
 
 from __future__ import division, print_function
 
 __version__ = '1.0.0'
 
-import getopt
+import argparse
 import os
 import re
 import sys
@@ -65,8 +56,8 @@ def processFont(fontPath, outputFolderPath, options):
         sys.exit(1)
 
     # Define the list of glyph names to convert to SVG
-    if options.glyphNamesToGenerate:
-        glyphNamesList = sorted(options.glyphNamesToGenerate)
+    if options.gnames_to_generate:
+        glyphNamesList = sorted(options.gnames_to_generate)
     else:
         glyphNamesList = sorted(glyphOrder)
 
@@ -78,8 +69,8 @@ def processFont(fontPath, outputFolderPath, options):
 
     # Define the list of glyph names to skip
     glyphNamesToSkipList = [".notdef"]
-    if options.glyphNamesToExclude:
-        glyphNamesToSkipList.extend(options.glyphNamesToExclude)
+    if options.gnames_to_exclude:
+        glyphNamesToSkipList.extend(options.gnames_to_exclude)
 
     # Determine which glyph names need to be saved in a nested folder
     glyphNamesToSaveInNestedFolder = get_gnames_to_save_in_nested_folder(
@@ -95,7 +86,7 @@ def processFont(fontPath, outputFolderPath, options):
     for svgItemsList in svgTable.docList:
         svgItemData, startGID, endGID = svgItemsList
 
-        if options.resetViewBox:
+        if options.reset_view_box:
             svgItemData = resetViewBox(svgItemData)
 
         while(startGID != endGID + 1):
@@ -134,62 +125,67 @@ def processFont(fontPath, outputFolderPath, options):
     final_message(filesSaved)
 
 
+def get_options(args):
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawTextHelpFormatter,
+        description=__doc__
+    )
+    parser.add_argument(
+        '--version',
+        action='version',
+        version=__version__
+    )
+    parser.add_argument(
+        '-o',
+        metavar='FOLDER_PATH',
+        dest='output_folder_path',
+        help='path to folder for outputting the SVG files to.'
+    )
+    parser.add_argument(
+        '-r',
+        action='store_true',
+        dest='reset_view_box',
+        help='reset viewBox values.'
+    )
+    parser.add_argument(
+        '-g',
+        metavar='GLYPH_NAMES',
+        dest='gnames_to_generate',
+        type=split_comma_sequence,
+        default=[],
+        help='comma-separated sequence of glyph names to make SVG files from.'
+    )
+    parser.add_argument(
+        '-x',
+        metavar='GLYPH_NAMES',
+        dest='gnames_to_exclude',
+        type=split_comma_sequence,
+        default=[],
+        help='comma-separated sequence of glyph names to exclude.'
+    )
+    parser.add_argument(
+        'input_path',
+        metavar='FONT',
+        help='OTF/TTF/WOFF/WOFF2 font file.',
+    )
+    options = parser.parse_args(args)
 
-class Options(object):
-    outputFolderPath = None
-    resetViewBox = False
-    glyphNamesToGenerate = None
-    glyphNamesToExclude = None
-
-    def __init__(self, rawOptions):
-        for option, value in rawOptions:
-            if option == "-h":
-                print(__doc__)
-                sys.exit(0)
-            elif option == "-r":
-                self.resetViewBox = True
-            elif option == "-g":
-                if value:
-                    self.glyphNamesToGenerate = value.split(',')
-            elif option == "-x":
-                if value:
-                    self.glyphNamesToExclude = value.split(',')
-            elif option == "-o":
-                if value:
-                    path = os.path.realpath(value)
-                    if os.path.isdir(path):
-                        self.outputFolderPath = path
-                    else:
-                        print("ERROR: {} is not a valid folder path.".format(
-                            path), file=sys.stderr)
-                        sys.exit(1)
-
-
-def parseOptions(args):
-    try:
-        rawOptions, files = getopt.getopt(args, "g:ho:rx:")
-    except getopt.GetoptError as err:
-        print("ERROR:", err, file=sys.stderr)
-        sys.exit(2)
-
-    return validateFontPaths(files), Options(rawOptions)
+    options.font_paths_list = validate_font_paths([options.input_path])
+    return options
 
 
 def main(args=None):
-    fontPathsList, options = parseOptions(sys.argv[1:])
+    opts = get_options(args)
 
-    if not len(fontPathsList):
-        print("ERROR: No valid font file path was provided.", file=sys.stderr)
+    if not opts.font_paths_list:
         return 1
 
-    # If the path to the output folder was not provided, create a folder
-    # named 'SVGs' in the same directory where the first font is.
-    outputFolderPath = options.outputFolderPath
-    if not outputFolderPath:
-        outputFolderPath = os.path.join(os.path.dirname(fontPathsList[0]),
-                                        "SVGs")
+    first_font_path = opts.font_paths_list[0]
 
-    processFont(fontPathsList[0], outputFolderPath, options)
+    output_folder_path = get_output_folder_path(opts.output_folder_path,
+                                                first_font_path)
+
+    processFont(first_font_path, output_folder_path, opts)
 
 
 if __name__ == "__main__":

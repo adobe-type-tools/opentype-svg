@@ -5,26 +5,13 @@
 """
 Adds an SVG table to a font, using SVG files provided.
 The font format can be either OpenType or TrueType.
-
-Usage:
-  python addSVGtable.py [options] -s <folder_path> font
-
-Options:
-  -s  path to folder containing SVG files.
-      (the file names MUST match the names of the
-      glyphs they're meant to be associated with)
-  -m  do not make a copy of the input font.
-  -k  do not strip the 'viewBox' parameter.
-  -w  generate WOFF and WOFF2 formats.
-  -x  comma-separated list of glyph names to exclude.
-  -z  compress the SVG table.
 """
 
 from __future__ import print_function
 
 __version__ = '1.0.0'
 
-import getopt
+import argparse
 import os
 import re
 import sys
@@ -121,7 +108,7 @@ def processFont(fontPath, svgFilePathsList, options):
     for svgFilePath in svgFilePathsList:
         gName = getGlyphNameFromFileName(svgFilePath)
 
-        if gName in options.glyphNamesToExclude:
+        if gName in options.gnames_to_exclude:
             continue
 
         try:
@@ -145,7 +132,7 @@ def processFont(fontPath, svgFilePathsList, options):
         svgItemData = setIDvalue(svgItemData, gid)
 
         # Remove the viewBox parameter
-        if options.stripViewBox:
+        if options.strip_viewbox:
             svgItemData = stripViewBox(svgItemData)
 
         # Clean-up SVG document
@@ -163,19 +150,19 @@ def processFont(fontPath, svgFilePathsList, options):
     svgDocsList = [svgDocsDict[index] for index in sorted(svgDocsDict.keys())]
 
     svgTable = ttLib.newTable('SVG ')
-    svgTable.compressed = options.compressSVGs
+    svgTable.compressed = options.compress_svgs
     svgTable.docList = svgDocsList
     svgTable.colorPalettes = None
     font['SVG '] = svgTable
 
     # Make copy of the original font
-    if options.makeFontCopy:
+    if options.make_font_copy:
         fontCopyPath = makeFontCopyPath(fontPath)
         copy2(fontPath, fontCopyPath)
 
     font.save(fontPath)
 
-    if options.generateWOFFs:
+    if options.generate_woffs:
         # WOFF files are smaller if SVG table is uncompressed
         font['SVG '].compressed = False
         for ext in ['woff', 'woff2']:
@@ -185,8 +172,9 @@ def processFont(fontPath, svgFilePathsList, options):
 
     font.close()
 
-    print("{} SVG glyphs were successfully added to {}".format(
-        svgGlyphsAdded, os.path.split(fontPath)[1]), file=sys.stdout)
+    plural = 's were' if svgGlyphsAdded != 1 else ' was'
+    print("{} SVG glyph{} successfully added to {}".format(
+        svgGlyphsAdded, plural, os.path.split(fontPath)[1]), file=sys.stdout)
 
 
 reSVGelement = re.compile(r"<svg.+?>.+?</svg>", re.DOTALL)
@@ -234,68 +222,92 @@ def validateSVGfiles(svgFilePathsList):
     return validatedPaths
 
 
-class Options(object):
-    svgFolderPath = None
-    makeFontCopy = True
-    generateWOFFs = False
-    compressSVGs = False
-    glyphNamesToExclude = []
-    stripViewBox = True
+def get_options(args):
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawTextHelpFormatter,
+        description=__doc__
+    )
+    parser.add_argument(
+        '--version',
+        action='version',
+        version=__version__
+    )
+    parser.add_argument(
+        '-s',
+        metavar='FOLDER_PATH',
+        dest='svg_folder_path',
+        required=True,
+        help='path to folder containing SVG files.\n'
+             'The file names MUST match the names of the\n'
+             "glyphs they're meant to be associated with."
+    )
+    parser.add_argument(
+        '-m',
+        action='store_false',
+        dest='make_font_copy',
+        help='do not make a copy of the input font.'
+    )
+    parser.add_argument(
+        '-k',
+        action='store_false',
+        dest='strip_viewbox',
+        help="do not strip the 'viewBox' parameter."
+    )
+    parser.add_argument(
+        '-w',
+        action='store_true',
+        dest='generate_woffs',
+        help='generate WOFF and WOFF2 formats.'
+    )
+    parser.add_argument(
+        '-x',
+        metavar='GLYPH_NAMES',
+        dest='gnames_to_exclude',
+        type=split_comma_sequence,
+        default=[],
+        help='comma-separated sequence of glyph names to exclude.'
+    )
+    parser.add_argument(
+        '-z',
+        action='store_true',
+        dest='compress_svgs',
+        help='compress the SVG table.'
+    )
+    parser.add_argument(
+        'input_path',
+        metavar='FONT',
+        help='OTF/TTF font file.',
+    )
+    options = parser.parse_args(args)
 
-    def __init__(self, rawOptions):
-        for option, value in rawOptions:
-            if option == "-h":
-                print(__doc__)
-                sys.exit(0)
-            elif option == "-m":
-                self.makeFontCopy = False
-            elif option == "-w":
-                self.generateWOFFs = True
-            elif option == "-z":
-                self.compressSVGs = True
-            elif option == "-k":
-                self.stripViewBox = False
-            elif option == "-x":
-                if value:
-                    self.glyphNamesToExclude.extend(value.split(','))
-            elif option == "-s":
-                if value:
-                    path = os.path.realpath(value)
-                    if os.path.isdir(path):
-                        self.svgFolderPath = path
-                    else:
-                        print("ERROR: {} is not a valid folder path.".format(
-                            path), file=sys.stderr)
-                        sys.exit(1)
+    if options.generate_woffs:
+        # Make sure that the brotli module is installed
+        try:
+            import brotli
+        except ImportError as err:
+            print("ERROR: {} was found. The WOFF2 format requires it.".format(
+                err), file=sys.stderr)
+            sys.exit(1)
 
-
-def parseOptions(args):
-    try:
-        rawOptions, files = getopt.getopt(args, "hkms:wx:z")
-    except getopt.GetoptError as err:
-        print("ERROR:", err, file=sys.stderr)
-        sys.exit(2)
-
-    return validateFontPaths(files), Options(rawOptions)
+    options.font_paths_list = validate_font_paths([options.input_path])
+    return options
 
 
 def main(args=None):
-    fontPathsList, options = parseOptions(sys.argv[1:])
+    opts = get_options(args)
 
-    if not len(fontPathsList):
-        print("ERROR: No valid font file path was provided.", file=sys.stderr)
+    if not opts.font_paths_list:
         return 1
 
-    if not options.svgFolderPath:
-        print("ERROR: Path to folder containing SVG files was not provided.",
-              file=sys.stderr)
-        return 1
-    else:
-        svgFilePathsList = []
+    # Validate and make absolute the path to the folder with SVGs
+    svg_folder_path = validate_folder_path(opts.svg_folder_path)
+
+    # Collect the paths to SVG files
+    svgFilePathsList = []
+    for dirName, subdirList, fileList in os.walk(svg_folder_path):
         # Support nested folders
-        for dirName, subdirList, fileList in os.walk(options.svgFolderPath):
-            for file in fileList:
-                svgFilePathsList.append(os.path.join(dirName, file))
+        for file in fileList:
+            svgFilePathsList.append(os.path.join(dirName, file))
 
     # Validate the SVGs
     svgFilePathsList = validateSVGfiles(svgFilePathsList)
@@ -304,7 +316,7 @@ def main(args=None):
         print("No SVG files were found.", file=sys.stdout)
         return 1
 
-    processFont(fontPathsList[0], svgFilePathsList, options)
+    processFont(opts.font_paths_list[0], svgFilePathsList, opts)
 
 
 if __name__ == "__main__":
