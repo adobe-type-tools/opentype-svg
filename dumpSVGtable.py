@@ -25,7 +25,10 @@ import os
 import re
 import sys
 
-from shared_utils import validateFontPaths, writeFile
+from shared_utils import (write_file, final_message, get_output_folder_path,
+                          validate_font_paths, split_comma_sequence,
+                          create_folder, create_nested_folder,
+                          get_gnames_to_save_in_nested_folder,)
 
 from fontTools import ttLib
 
@@ -78,21 +81,9 @@ def processFont(fontPath, outputFolderPath, options):
     if options.glyphNamesToExclude:
         glyphNamesToSkipList.extend(options.glyphNamesToExclude)
 
-    # On case-insensitive systems the SVG files cannot be all saved to the
-    # same folder otherwise a.svg and A.svg would be written over each other,
-    # for example. So, pre-process the list of glyph names to find which ones
-    # step on each other, and save half of them in a nested folder. This
-    # approach won't handle the case where a.svg and A.svg are NOT generated
-    # on the same run, but that's fine; the user will have to handle that.
-    # Also, the process below assumes that there are no more than 2 conflicts
-    # per name, i.e. it will handle "the/The" but not "the/The/THE/...";
-    # this shouldn't be a problem in 99% of the time.
-    uniqueNamesSet = set()
-    glyphNamesToSaveInNestedFolder = []
-    for gName in glyphNamesList:
-        if gName.lower() in uniqueNamesSet:
-            glyphNamesToSaveInNestedFolder.append(gName)
-        uniqueNamesSet.add(gName.lower())
+    # Determine which glyph names need to be saved in a nested folder
+    glyphNamesToSaveInNestedFolder = get_gnames_to_save_in_nested_folder(
+        glyphNamesList)
 
     nestedFolderPath = None
     filesSaved = 0
@@ -124,39 +115,24 @@ def processFont(fontPath, outputFolderPath, options):
                 continue
 
             # Create the output folder.
-            # This may be necessary if the folder was not provided. The folder
-            # is made this late in the process because only now it's clear
-            # that's needed.
-            try:
-                os.makedirs(outputFolderPath)
-            except OSError:
-                if not os.path.isdir(outputFolderPath):
-                    raise
+            # This may be necessary if the folder was not provided.
+            # The folder is made this late in the process because
+            # only now it's clear that's needed.
+            create_folder(outputFolderPath)
 
+            # Create the nested folder, if there are conflicting glyph names.
             if gName in glyphNamesToSaveInNestedFolder:
-                # Create the nested folder
-                if not nestedFolderPath:
-                    nestedFolderPath = os.path.join(outputFolderPath,
-                                                    "_moreSVGs_")
-                    try:
-                        os.makedirs(nestedFolderPath)
-                    except OSError:
-                        if not os.path.isdir(nestedFolderPath):
-                            raise
-                folderPath = nestedFolderPath
-            else:
-                folderPath = outputFolderPath
+                outputFolderPath = create_nested_folder(nestedFolderPath,
+                                                        outputFolderPath)
 
-            svgFilePath = os.path.join(folderPath, gName + '.svg')
-            writeFile(svgFilePath, svgItemData)
+            svgFilePath = os.path.join(outputFolderPath, gName + '.svg')
+            write_file(svgFilePath, svgItemData)
             filesSaved += 1
             startGID += 1
 
     font.close()
+    final_message(filesSaved)
 
-    if filesSaved == 0:
-        filesSaved = 'No'
-    print("{} SVG files saved.".format(filesSaved), file=sys.stdout)
 
 
 class Options(object):

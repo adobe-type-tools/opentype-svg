@@ -30,7 +30,8 @@ import re
 import sys
 from shutil import copy2
 
-from shared_utils import validateFontPaths, readFile
+from shared_utils import (read_file, split_comma_sequence,
+                          validate_font_paths, validate_folder_path)
 
 from fontTools import ttLib
 
@@ -138,7 +139,7 @@ def processFont(fontPath, svgFilePathsList, options):
         else:
             gNamesSeenAlreadyList.append(gName)
 
-        svgItemData = readFile(svgFilePath)
+        svgItemData = read_file(svgFilePath)
 
         # Set id value
         svgItemData = setIDvalue(svgItemData, gid)
@@ -212,7 +213,7 @@ def validateSVGfiles(svgFilePathsList):
 
         assert os.path.isfile(filePath), "Not a valid file path: {}".format(
             filePath)
-        data = readFile(filePath)
+        data = read_file(filePath)
 
         # Find <svg> blob
         svg = reSVGelement.search(data)

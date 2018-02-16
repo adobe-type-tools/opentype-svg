@@ -28,7 +28,11 @@ import os
 import re
 import sys
 
-from shared_utils import validateFontPaths, writeFile
+from shared_utils import (validate_font_paths, write_file,
+                          split_comma_sequence, final_message,
+                          create_folder, create_nested_folder,
+                          get_gnames_to_save_in_nested_folder,
+                          SVG_FOLDER_NAME)
 
 from fontTools import ttLib
 from fontTools.pens.basePen import BasePen
@@ -125,21 +129,9 @@ def processFonts(fontPathsList, hexColorsList, outputFolderPath, options):
     if options.glyphNamesToExclude:
         glyphNamesToSkipList.extend(options.glyphNamesToExclude)
 
-    # On case-insensitive systems the SVG files cannot be all saved to the
-    # same folder otherwise a.svg and A.svg would be written over each other,
-    # for example. So, pre-process the list of glyph names to find which ones
-    # step on each other, and save half of them in a nested folder. This
-    # approach won't handle the case where a.svg and A.svg are NOT generated
-    # on the same run, but that's fine; the user will have to handle that.
-    # Also, the process below assumes that there are no more than 2 conflicts
-    # per name, i.e. it will handle "the/The" but not "the/The/THE/...";
-    # this shouldn't be a problem in 99% of the time.
-    uniqueNamesSet = set()
-    glyphNamesToSaveInNestedFolder = []
-    for gName in glyphNamesList:
-        if gName.lower() in uniqueNamesSet:
-            glyphNamesToSaveInNestedFolder.append(gName)
-        uniqueNamesSet.add(gName.lower())
+    # Determine which glyph names need to be saved in a nested folder
+    glyphNamesToSaveInNestedFolder = get_gnames_to_save_in_nested_folder(
+        glyphNamesList)
 
     # Gather the fonts' UPM. For simplicity, it's assumed that all fonts have
     # the same UPM value. If fetching the UPM value fails, default to 1000.
@@ -187,35 +179,22 @@ def processFonts(fontPathsList, hexColorsList, outputFolderPath, options):
             continue
 
         # Create the output folder.
-        # This may be necessary if the folder was not provided. The folder
-        # is made this late in the process because only now it's clear
-        # that's needed.
-        try:
-            os.makedirs(outputFolderPath)
-        except OSError:
-            if not os.path.isdir(outputFolderPath):
-                raise
+        # This may be necessary if the folder was not provided.
+        # The folder is made this late in the process because
+        # only now it's clear that's needed.
+        create_folder(outputFolderPath)
 
+        # Create the nested folder, if there are conflicting glyph names.
         if gName in glyphNamesToSaveInNestedFolder:
-            # Create the nested folder
-            if not nestedFolderPath:
-                nestedFolderPath = os.path.join(outputFolderPath, "_moreSVGs_")
-                try:
-                    os.makedirs(nestedFolderPath)
-                except OSError:
-                    if not os.path.isdir(nestedFolderPath):
-                        raise
-            folderPath = nestedFolderPath
-        else:
-            folderPath = outputFolderPath
+            outputFolderPath = create_nested_folder(nestedFolderPath,
+                                                    outputFolderPath)
 
-        svgFilePath = os.path.join(folderPath, gName + '.svg')
-        writeFile(svgFilePath, svgStr)
+        svgFilePath = os.path.join(outputFolderPath, gName + '.svg')
+        write_file(svgFilePath, svgStr)
         filesSaved += 1
 
-    if filesSaved == 0:
-        filesSaved = 'No'
-    print("{} SVG files saved.".format(filesSaved), file=sys.stdout)
+    font.close()
+    final_message(filesSaved)
 
 
 reHexColor = re.compile(r"^(?=[a-fA-F0-9]*$)(?:.{6}|.{8})$")
@@ -275,7 +254,7 @@ def parseOptions(args):
         print("ERROR:", err, file=sys.stderr)
         sys.exit(2)
 
-    return validateFontPaths(files), Options(rawOptions)
+    return validate_font_paths(files), Options(rawOptions)
 
 
 def main(args=None):
@@ -308,7 +287,7 @@ def main(args=None):
     outputFolderPath = options.outputFolderPath
     if not outputFolderPath:
         outputFolderPath = os.path.join(os.path.dirname(fontPathsList[0]),
-                                        "SVGs")
+                                        SVG_FOLDER_NAME)
 
     processFonts(fontPathsList, hexColorsList, outputFolderPath, options)
 
