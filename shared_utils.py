@@ -131,8 +131,7 @@ def get_output_folder_path(provided_folder_path, first_font_path):
     """
     if provided_folder_path:
         return validate_folder_path(provided_folder_path)
-    else:
-        return os.path.join(os.path.dirname(first_font_path), SVG_FOLDER_NAME)
+    return os.path.join(os.path.dirname(first_font_path), SVG_FOLDER_NAME)
 
 
 def get_gnames_to_save_in_nested_folder(gnames_list):

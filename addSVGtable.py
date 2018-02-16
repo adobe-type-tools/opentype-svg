@@ -34,10 +34,8 @@ reIDvalue = re.compile(r"<svg[^>]+?(id=\".*?\").+?>", re.DOTALL)
 def setIDvalue(data, gid):
     id = reIDvalue.search(data)
     if id:
-        newData = re.sub(id.group(1), 'id="glyph{}"'.format(gid), data)
-    else:
-        newData = re.sub('<svg', '<svg id="glyph{}"'.format(gid), data)
-    return newData
+        return re.sub(id.group(1), 'id="glyph{}"'.format(gid), data)
+    return re.sub('<svg', '<svg id="glyph{}"'.format(gid), data)
 
 
 # The value of the viewBox attribute is a list of four numbers min-x, min-y,
