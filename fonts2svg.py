@@ -72,7 +72,8 @@ class SVGPen(BasePen):
     def _endPath(self):
         self._closePath()
 
-    def _isInt(self, tup):
+    @staticmethod
+    def _isInt(tup):
         return [int(flt) if (flt).is_integer() else flt for flt in tup]
 
 
@@ -88,7 +89,8 @@ def processFonts(font_paths_list, hex_colors_list, outputFolderPath, options):
         allGlyphNamesList.append(gSet.keys())
         font.close()
 
-    assert(len(glyphSetsList) > 0)
+    if not glyphSetsList:
+        raise AssertionError("No glyph sets.")
 
     # Define the list of glyph names to convert to SVG
     if options.gnames_to_generate:

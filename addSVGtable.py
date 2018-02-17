@@ -32,9 +32,9 @@ reIDvalue = re.compile(r"<svg[^>]+?(id=\".*?\").+?>", re.DOTALL)
 
 
 def setIDvalue(data, gid):
-    id = reIDvalue.search(data)
-    if id:
-        return re.sub(id.group(1), 'id="glyph{}"'.format(gid), data)
+    id_value = reIDvalue.search(data)
+    if id_value:
+        return re.sub(id_value.group(1), 'id="glyph{}"'.format(gid), data)
     return re.sub('<svg', '<svg id="glyph{}"'.format(gid), data)
 
 
@@ -197,8 +197,8 @@ def validateSVGfiles(svgFilePathsList):
         if not fileName.lower().endswith('.svg'):
             continue
 
-        assert os.path.isfile(filePath), "Not a valid file path: {}".format(
-            filePath)
+        if not os.path.isfile(filePath):
+            raise AssertionError("Not a valid file path: {}".format(filePath))
         data = read_file(filePath)
 
         # Find <svg> blob
@@ -302,7 +302,7 @@ def main(args=None):
 
     # Collect the paths to SVG files
     svgFilePathsList = []
-    for dirName, subdirList, fileList in os.walk(svg_folder_path):
+    for dirName, _, fileList in os.walk(svg_folder_path):
         # Support nested folders
         for file in fileList:
             svgFilePathsList.append(os.path.join(dirName, file))

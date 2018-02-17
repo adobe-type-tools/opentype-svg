@@ -99,7 +99,7 @@ def processFont(fontPath, outputFolderPath, options):
                 print("WARNING: The SVG table references a glyph ID (#{}) "
                       "which the font does not contain.\n"
                       "         The artwork will be saved as '{}.svg'.".format(
-                          (startGID, gName)), file=sys.stderr)
+                          startGID, gName), file=sys.stderr)
 
             if gName not in glyphNamesList or gName in glyphNamesToSkipList:
                 startGID += 1
