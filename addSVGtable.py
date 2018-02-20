@@ -235,6 +235,7 @@ def get_options(args):
         metavar='FOLDER_PATH',
         dest='svg_folder_path',
         required=True,
+        type=validate_folder_path,
         help='path to folder containing SVG files.\n'
              'The file names MUST match the names of the\n'
              "glyphs they're meant to be associated with."
@@ -297,12 +298,9 @@ def main(args=None):
     if not opts.font_paths_list:
         return 1
 
-    # Validate and make absolute the path to the folder with SVGs
-    svg_folder_path = validate_folder_path(opts.svg_folder_path)
-
     # Collect the paths to SVG files
     svgFilePathsList = []
-    for dirName, _, fileList in os.walk(svg_folder_path):
+    for dirName, _, fileList in os.walk(opts.svg_folder_path):
         # Support nested folders
         for file in fileList:
             svgFilePathsList.append(os.path.join(dirName, file))
