@@ -78,7 +78,7 @@ def validate_font_paths(paths_list):
 
 
 def split_comma_sequence(comma_str):
-    return comma_str.split(',')
+    return [item.strip() for item in comma_str.split(',')]
 
 
 def final_message(num_files_saved):
