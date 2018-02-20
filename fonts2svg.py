@@ -192,7 +192,7 @@ RE_HEXCOLOR = re.compile(r"^(?=[a-fA-F0-9]*$)(?:.{6}|.{8})$")
 
 
 def validate_hex_values(hex_str):
-    hex_values = hex_str.split(',')
+    hex_values = split_comma_sequence(hex_str)
     for hex_val in hex_values:
         if not RE_HEXCOLOR.match(hex_val):
             raise argparse.ArgumentTypeError(
