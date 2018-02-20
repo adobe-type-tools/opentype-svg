@@ -86,7 +86,7 @@ def processFont(fontPath, outputFolderPath, options):
     for svgItemsList in svgTable.docList:
         svgItemData, startGID, endGID = svgItemsList
 
-        if options.reset_view_box:
+        if options.reset_viewbox:
             svgItemData = resetViewBox(svgItemData)
 
         while(startGID != endGID + 1):
@@ -144,7 +144,7 @@ def get_options(args):
     parser.add_argument(
         '-r',
         action='store_true',
-        dest='reset_view_box',
+        dest='reset_viewbox',
         help='reset viewBox values.'
     )
     parser.add_argument(
