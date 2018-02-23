@@ -19,21 +19,23 @@ NESTED_FOLDER_NAME = "_moreSVGs_"
 FONTTOOLS_URL = 'https://github.com/fonttools/fonttools'
 MIN_FT_VERSION = '3.0'
 
-try:
-    from fontTools import version as ftversion
-except ImportError:
-    print("ERROR: FontTools Python module is not installed.\n"
-          "Get the latest version at {}".format(FONTTOOLS_URL),
-          file=sys.stderr)
-    sys.exit(1)
 
-if LooseVersion(ftversion) < LooseVersion(MIN_FT_VERSION):
-    print("ERROR: The FontTools module version must be {} or higher.\n"
-          "You have version {} installed.\n"
-          "Get the latest version at {}".format(
-              MIN_FT_VERSION, ftversion, FONTTOOLS_URL),
-          file=sys.stderr)
-    sys.exit(1)
+def check_fonttools():
+    try:
+        from fontTools import version as ftversion
+    except ImportError:
+        print("ERROR: FontTools Python module is not installed.\n"
+              "Get the latest version at {}".format(FONTTOOLS_URL),
+              file=sys.stderr)
+        sys.exit(1)
+
+    if LooseVersion(ftversion) < LooseVersion(MIN_FT_VERSION):
+        print("ERROR: The FontTools module version must be {} or higher.\n"
+              "You have version {} installed.\n"
+              "Get the latest version at {}".format(
+                  MIN_FT_VERSION, ftversion, FONTTOOLS_URL),
+              file=sys.stderr)
+        sys.exit(1)
 
 
 def read_file(file_path):

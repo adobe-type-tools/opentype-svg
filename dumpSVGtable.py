@@ -9,7 +9,7 @@ The font's format can be either OpenType, TrueType, WOFF, or WOFF2.
 
 from __future__ import division, print_function
 
-__version__ = '1.0.0'
+__version__ = '1.0.1'
 
 import argparse
 import os
@@ -19,7 +19,9 @@ import sys
 from shared_utils import (write_file, final_message, get_output_folder_path,
                           validate_font_paths, split_comma_sequence,
                           create_folder, create_nested_folder,
-                          get_gnames_to_save_in_nested_folder,)
+                          get_gnames_to_save_in_nested_folder,
+                          check_fonttools)
+check_fonttools()
 
 from fontTools import ttLib
 
