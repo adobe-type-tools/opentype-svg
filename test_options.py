@@ -21,8 +21,6 @@ XTRA_ARGS = ['-s', 'fonts']
 
 
 class OptionsTest(unittest.TestCase):
-    def __init__(self, methodName):
-        unittest.TestCase.__init__(self, methodName)
 
     def setUp(self):
         self.font_path = os.path.join('fonts', 'Zebrawood.otf')
@@ -109,7 +107,7 @@ class OptionsTest(unittest.TestCase):
         attr = ('make_font_copy', 'strip_viewbox',
                 'generate_woffs', 'compress_svgs')
         result = list(set([getattr(opts, name) for name in attr]))[0]
-        self.assertEqual(result, True)
+        self.assertTrue(result)
 
     def test_get_options_addSVGtable_store_false_opts(self):
         args = XTRA_ARGS + ['-m', '-k', self.font_path]
@@ -117,19 +115,19 @@ class OptionsTest(unittest.TestCase):
         attr = ('make_font_copy', 'strip_viewbox',
                 'generate_woffs', 'compress_svgs')
         result = list(set([getattr(opts, name) for name in attr]))[0]
-        self.assertEqual(result, False)
+        self.assertFalse(result)
 
     def test_get_options_dumpSVGtable_store_true_opts(self):
         args = ['-r', self.font_path]
         opts = dumpSVGtable.get_options(args)
         result = getattr(opts, 'reset_viewbox')
-        self.assertEqual(result, True)
+        self.assertTrue(result)
 
     def test_get_options_fonts2svg_store_true_opts(self):
         args = ['-u', self.font_path]
         opts = fonts2svg.get_options(args)
         result = getattr(opts, 'glyphsets_union')
-        self.assertEqual(result, True)
+        self.assertTrue(result)
 
     def test_get_options_addSVGtable_opts_defaults(self):
         dflt = {'make_font_copy': True,
