@@ -49,3 +49,4 @@ build: false
 
 test_script:
   - "python test_options.py"
+  - "python test_shared_utils.py"
