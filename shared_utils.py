@@ -15,31 +15,27 @@ NESTED_FOLDER_NAME = "_moreSVGs_"
 
 
 def read_file(file_path):
-    f = open(file_path, "rt")
-    data = f.read()
-    f.close()
-    return data
+    with open(file_path, "r") as f:
+        return f.read()
 
 
-def write_file(file_name, data):
-    outfile = open(file_name, 'w')
-    outfile.write(data)
-    outfile.close()
+def write_file(file_path, data):
+    with open(file_path, "w") as f:
+        f.write(data)
 
 
 def get_font_format(font_file_path):
-    f = open(font_file_path, "rb")
-    head = f.read(4).decode()
-    f.close()
-    if head == "OTTO":
-        return "OTF"
-    elif head in ("\0\1\0\0", "true"):
-        return "TTF"
-    elif head == "wOFF":
-        return "WOFF"
-    elif head == "wOF2":
-        return "WOFF2"
-    return None
+    with open(font_file_path, "rb") as f:
+        head = f.read(4).decode()
+        if head == "OTTO":
+            return "OTF"
+        elif head in ("\0\1\0\0", "true"):
+            return "TTF"
+        elif head == "wOFF":
+            return "WOFF"
+        elif head == "wOF2":
+            return "WOFF2"
+        return None
 
 
 def validate_font_paths(paths_list):
