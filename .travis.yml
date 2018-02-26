@@ -1,22 +1,22 @@
-dist: trusty
-sudo: false
-
 language: python
 python:
   - "2.7"
   - "3.6"
 
 install:
-  - pip install fonttools
   - pip install coverage
   - pip install codacy-coverage
 
 script:
-  - coverage run --parallel-mode --source=. test_options.py
+  - coverage run -a --source=. test_check_fonttools.py
+  - pip install fonttools==2.5
+  - coverage run -a --source=. test_check_fonttools.py
+  - pip install -U fonttools
+  - sh .coverage_run_all.sh
   - pip install brotli
-  - coverage run --parallel-mode --source=. test_options.py
+  - sh .coverage_run_all.sh
 
 after_success:
-  - coverage combine
+  - coverage report
   - coverage xml
   - python-codacy-coverage -r coverage.xml
