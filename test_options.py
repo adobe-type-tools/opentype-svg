@@ -1,3 +1,5 @@
+# Copyright 2018 Adobe. All rights reserved.
+
 from __future__ import print_function, division, absolute_import
 
 import os
@@ -10,7 +12,7 @@ import dumpSVGtable
 
 have_brotli = False
 try:
-    import brotli
+    import brotli  # pylint: disable=unused-import
     have_brotli = True
 except ImportError:
     pass
