@@ -6,6 +6,7 @@ python:
 install:
   - pip install coverage
   - pip install codacy-coverage
+  - pip install codecov
 
 script:
   - coverage run -a --source=. test_check_fonttools.py
@@ -20,3 +21,4 @@ after_success:
   - coverage report
   - coverage xml
   - python-codacy-coverage -r coverage.xml
+  - codecov
