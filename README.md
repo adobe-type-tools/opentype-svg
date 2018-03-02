@@ -1,7 +1,6 @@
 [![Travis Badge](https://travis-ci.org/adobe-type-tools/opentype-svg.svg?branch=master)](https://travis-ci.org/adobe-type-tools/opentype-svg)
 [![AppVeyor Badge](https://ci.appveyor.com/api/projects/status/lsd60htpcvu2lr3h/branch/master?svg=true)](https://ci.appveyor.com/project/adobe-type-tools/opentype-svg/branch/master)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/0f76af7c038649fc98f5ee46f5ccb763)](https://www.codacy.com/app/adobe-type-tools/opentype-svg?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=adobe-type-tools/opentype-svg&amp;utm_campaign=Badge_Grade)
-[![Coverage Badge](https://api.codacy.com/project/badge/Coverage/0f76af7c038649fc98f5ee46f5ccb763)](https://www.codacy.com/app/adobe-type-tools/opentype-svg?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=adobe-type-tools/opentype-svg&amp;utm_campaign=Badge_Coverage)
 [![Codecov Badge](https://codecov.io/gh/adobe-type-tools/opentype-svg/branch/master/graph/badge.svg)](https://codecov.io/gh/adobe-type-tools/opentype-svg)
 
 # Tools for making OpenType-SVG fonts
