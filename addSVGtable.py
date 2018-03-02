@@ -9,7 +9,7 @@ The font format can be either OpenType or TrueType.
 
 from __future__ import print_function
 
-__version__ = '1.0.1'
+__version__ = '1.1.0'
 
 import argparse
 import os
@@ -17,10 +17,10 @@ import re
 import sys
 from shutil import copy2
 
-from shared_utils import (read_file, split_comma_sequence,
-                          validate_font_paths, validate_folder_path)
+from util.shared_utils import (read_file, split_comma_sequence,
+                               validate_font_paths, validate_folder_path)
 
-import check_fonttools   # pylint: disable=unused-import
+import util.check_fonttools   # pylint: disable=unused-import
 
 from fontTools import ttLib
 

@@ -8,14 +8,17 @@ install:
   - pip install codacy-coverage
   - pip install codecov
 
+before_script:
+  - export PYTHONPATH=$PYTHONPATH:$(pwd)
+
 script:
-  - coverage run -a --source=. test_check_fonttools.py
+  - coverage run -a --source=. tests/check_fonttools_test.py
   - pip install fonttools==2.5
-  - coverage run -a --source=. test_check_fonttools.py
+  - coverage run -a --source=. tests/check_fonttools_test.py
   - pip install -U fonttools
-  - sh .coverage_run_all.sh
+  - sh tests/run_tests.sh
   - pip install brotli
-  - sh .coverage_run_all.sh
+  - sh tests/run_tests.sh
 
 after_success:
   - coverage report
