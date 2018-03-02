@@ -17,7 +17,7 @@ try:
 except ImportError:
     StringIO = UnicodeIO  # Py3
 
-import shared_utils
+import util.shared_utils as shared_utils
 
 
 class SharedUtilsTest(unittest.TestCase):

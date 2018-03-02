@@ -47,6 +47,8 @@ install:
 
 build: false
 
+before_test:
+  - set PYTHONPATH=%PYTHONPATH%;%CD%
+
 test_script:
-  - "python test_options.py"
-  - "python test_shared_utils.py"
+  - "tests\\run_tests.cmd"
