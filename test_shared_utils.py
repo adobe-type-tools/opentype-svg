@@ -39,7 +39,7 @@ class SharedUtilsTest(unittest.TestCase):
 
     def test_read_write_file(self):
         content = '1st line\n2nd line\n3rd line'
-        with tempfile.NamedTemporaryFile(delete=True) as tmp:
+        with tempfile.NamedTemporaryFile(delete=False) as tmp:
             shared_utils.write_file(tmp.name, content)
             result = shared_utils.read_file(tmp.name)
             self.assertEqual(result.splitlines()[1], '2nd line')
@@ -51,7 +51,7 @@ class SharedUtilsTest(unittest.TestCase):
                   "wOFF": "WOFF",
                   "wOF2": "WOFF2",
                   "blah": None}
-        with tempfile.NamedTemporaryFile(delete=True) as tmp:
+        with tempfile.NamedTemporaryFile(delete=False) as tmp:
             for key, val in in_out.items():
                 data = bytearray(key, encoding="utf-8")
                 self.write_binary_file(tmp.name, data)
@@ -80,18 +80,22 @@ class SharedUtilsTest(unittest.TestCase):
         os.chmod(folder_path, 0o0)
 
         # try creating a folder inside the unaccessible one
+        # NOTE: apparently there's no way to make a Windows folder
+        # read-only programmatically, so first check if the parent
+        # folder cannot be accessed. See Windows note in os.chmod()
+        # https://docs.python.org/3/library/os.html#os.chmod
         blocked_folder_path = os.path.join(folder_path, 'blocked_folder')
-        with self.assertRaises(OSError) as cm:
-            shared_utils.create_folder(blocked_folder_path)
-        self.assertEqual(cm.exception.errno, 13)
+        if not os.access(folder_path, os.W_OK):
+            with self.assertRaises(OSError) as cm:
+                shared_utils.create_folder(blocked_folder_path)
+            self.assertEqual(cm.exception.errno, 13)
 
         # try creating a folder with the same name as an existing file
         file_path = 'new_file'
-        file = open(file_path, "w+")
-        file.close()
-        with self.assertRaises(OSError) as cm:
-            shared_utils.create_folder(file_path)
-        self.assertEqual(cm.exception.errno, 17)
+        with open(file_path, "w+"):
+            with self.assertRaises(OSError) as cm:
+                shared_utils.create_folder(file_path)
+            self.assertEqual(cm.exception.errno, 17)
 
         # remove artifacts
         os.chmod(folder_path, 0o755)
