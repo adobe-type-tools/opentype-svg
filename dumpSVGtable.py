@@ -116,10 +116,12 @@ def processFont(fontPath, outputFolderPath, options):
 
             # Create the nested folder, if there are conflicting glyph names.
             if gName in glyphNamesToSaveInNestedFolder:
-                outputFolderPath = create_nested_folder(nestedFolderPath,
-                                                        outputFolderPath)
+                folderPath = create_nested_folder(nestedFolderPath,
+                                                  outputFolderPath)
+            else:
+                folderPath = outputFolderPath
 
-            svgFilePath = os.path.join(outputFolderPath, gName + '.svg')
+            svgFilePath = os.path.join(folderPath, gName + '.svg')
             write_file(svgFilePath, svgItemData)
             filesSaved += 1
             startGID += 1
