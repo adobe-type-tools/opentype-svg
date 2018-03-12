@@ -36,6 +36,7 @@ You can use **Step 2** without doing **Step 1**, but there are a few things you 
 	* [SVG Cleaner](https://github.com/RazrFalcon/svgcleaner-gui/releases) (GUI version)
 	* [SVG Cleaner](https://github.com/RazrFalcon/svgcleaner) (command line version)
 	* [SVG Optimizer](https://github.com/svg/svgo)
+	* [Scour](https://github.com/scour-project/scour)
 
 * The script requires the SVG files to be named after the glyphs which they are meant to be associated with. For example, if the glyph in the font is named **ampersand**, the SVG file needs to be named `ampersand.svg`.
 
