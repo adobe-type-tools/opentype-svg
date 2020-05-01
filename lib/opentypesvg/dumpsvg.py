@@ -9,22 +9,25 @@ The font's format can be either OpenType, TrueType, WOFF, or WOFF2.
 
 from __future__ import division, print_function
 
-__version__ = '1.1.0'
+__version__ = '1.1.1'
 
 import argparse
 import os
 import re
 import sys
 
-from util.shared_utils import (write_file, final_message,
-                               get_output_folder_path,
-                               validate_font_paths, split_comma_sequence,
-                               create_folder, create_nested_folder,
-                               get_gnames_to_save_in_nested_folder)
-
-import util.check_fonttools  # pylint: disable=unused-import
-
 from fontTools import ttLib
+
+from opentypesvg.utils import (
+    create_folder,
+    create_nested_folder,
+    final_message,
+    get_gnames_to_save_in_nested_folder,
+    get_output_folder_path,
+    split_comma_sequence,
+    validate_font_paths,
+    write_file,
+)
 
 
 reViewBox = re.compile(r"viewBox=[\"|\']([\d, ])+?[\"|\']", re.DOTALL)

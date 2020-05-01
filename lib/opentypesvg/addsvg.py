@@ -9,7 +9,7 @@ The font format can be either OpenType or TrueType.
 
 from __future__ import print_function
 
-__version__ = '1.1.0'
+__version__ = '1.1.1'
 
 import argparse
 import os
@@ -17,12 +17,14 @@ import re
 import sys
 from shutil import copy2
 
-from util.shared_utils import (read_file, split_comma_sequence,
-                               validate_font_paths, validate_folder_path)
-
-import util.check_fonttools   # pylint: disable=unused-import
-
 from fontTools import ttLib
+
+from opentypesvg.utils import (
+    read_file,
+    split_comma_sequence,
+    validate_folder_path,
+    validate_font_paths,
+)
 
 
 def getGlyphNameFromFileName(filePath):
@@ -81,7 +83,7 @@ def cleanupSVGdoc(svgItemData):
     return svgItemData
 
 
-reCopyCounter = re.compile("#\d+$")
+reCopyCounter = re.compile(r"#\d+$")
 
 
 def makeFontCopyPath(fontPath):
@@ -280,15 +282,6 @@ def get_options(args):
         help='OTF/TTF font file.',
     )
     options = parser.parse_args(args)
-
-    if options.generate_woffs:
-        # Make sure that the brotli module is installed
-        try:
-            import brotli  # pylint: disable=unused-variable
-        except ImportError as err:
-            print("ERROR: {} was found. The WOFF2 format requires it.".format(
-                err), file=sys.stderr)
-            sys.exit(1)
 
     options.font_paths_list = validate_font_paths([options.input_path])
     return options
