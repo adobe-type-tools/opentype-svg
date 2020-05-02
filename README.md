@@ -1,4 +1,5 @@
-[![Codecov Badge](https://codecov.io/gh/adobe-type-tools/opentype-svg/branch/master/graph/badge.svg)](https://codecov.io/gh/adobe-type-tools/opentype-svg)
+[![PyPI](https://img.shields.io/pypi/v/opentypesvg.svg)](https://pypi.org/project/opentypesvg)
+[![Codecov](https://codecov.io/gh/adobe-type-tools/opentype-svg/branch/master/graph/badge.svg)](https://codecov.io/gh/adobe-type-tools/opentype-svg)
 
 # Tools for making OpenType-SVG fonts
 
@@ -23,25 +24,24 @@
 
 - Make sure you have Python 3.6 (or higher) installed.
 
-- Clone this repository.
-
-- `cd` into the repository folder.
-
 - Setup a virtual environment:
 
-		$ python3 -m venv venv
+		$ python3 -m venv ot-svg
+
 
 - Activate the environment:
 
-		$ source venv/bin/activate
+		$ source ot-svg/bin/activate
+
 
 - Update `pip`:
 
 		$ pip install -U pip
 
+
 - Install `opentypesvg`:
 
-		$ pip install .
+		$ pip install opentypesvg
 
 
 # How to make OpenType-SVG fonts?
@@ -49,14 +49,14 @@
 ### Step 1
 #### Generate a set of SVG files from a series of fonts and color values.
 
-![step1](imgs/step1.png "step 1")
+![step1](https://raw.githubusercontent.com/adobe-type-tools/opentype-svg/master/imgs/step1.png "step 1")
 
 	fonts2svg -c 99ccff,ff0066,cc0066 fonts/Zebrawood-Shadow.otf fonts/Zebrawood-Fill.otf fonts/Zebrawood-Dots.otf
 
 ### Step 2
 #### Add a set of SVG files to an existing OpenType (or TrueType) font.
 
-![step2](imgs/step2.png "step 2")
+![step2](https://raw.githubusercontent.com/adobe-type-tools/opentype-svg/master/imgs/step2.png "step 2")
 
 	addsvg -s fonts/SVGs fonts/Zebrawood.otf
 
