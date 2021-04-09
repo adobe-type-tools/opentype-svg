@@ -235,16 +235,6 @@ def get_options(args):
         version=__version__
     )
     parser.add_argument(
-        '-s',
-        metavar='FOLDER_PATH',
-        dest='svg_folder_path',
-        required=True,
-        type=validate_folder_path,
-        help='path to folder containing SVG files.\n'
-             'The file names MUST match the names of the\n'
-             "glyphs they're meant to be associated with."
-    )
-    parser.add_argument(
         '-m',
         action='store_false',
         dest='make_font_copy',
@@ -275,6 +265,14 @@ def get_options(args):
         action='store_true',
         dest='compress_svgs',
         help='compress the SVG table.'
+    )
+    parser.add_argument(
+        'svg_folder_path',
+        metavar='FOLDER_PATH',
+        type=validate_folder_path,
+        help='path to folder containing SVG files.\n'
+             'The file names MUST match the names of the\n'
+             "glyphs they're meant to be associated with."
     )
     parser.add_argument(
         'input_path',
