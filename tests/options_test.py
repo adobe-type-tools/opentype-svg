@@ -6,26 +6,27 @@ import os
 import sys
 import unittest
 
-import addSVGtable
-import fonts2svg
-import dumpSVGtable
+from opentypesvg import addsvg, dumpsvg, fonts2svg
 
 have_brotli = False
 try:
-    import brotli  # pylint: disable=unused-import
+    import brotli  # noqa
     have_brotli = True
 except ImportError:
     pass
 
 
-ALL_TOOLS = (dumpSVGtable, fonts2svg, addSVGtable)
-XTRA_ARGS = ['-s', 'fonts']
+# addsvg must be last because of the way some tests prepare the input
+ALL_TOOLS = (dumpsvg, fonts2svg, addsvg)
+ROOT_DIR = os.path.dirname(os.path.dirname(__file__))
+# addsvg requires a path to a folder in addition to the path to the font
+XTRA_ARG = os.path.join(ROOT_DIR, 'fonts')
 
 
 class OptionsTest(unittest.TestCase):
 
     def setUp(self):
-        self.font_path = os.path.join('fonts', 'Zebrawood.otf')
+        self.font_path = os.path.join(ROOT_DIR, 'fonts', 'Zebrawood.otf')
 
 # -----
 # Tests
@@ -49,23 +50,11 @@ class OptionsTest(unittest.TestCase):
                 tool.get_options(['--version'])
             self.assertEqual(cm.exception.code, 0)
 
-    def test_get_options_required_option(self):
-        # -s option is required for addSVGtable
-        with self.assertRaises(SystemExit) as cm:
-            addSVGtable.get_options(['xfont'])
-        self.assertEqual(cm.exception.code, 2)
-
-    def test_get_options_invalid_folder_path(self):
-        with self.assertRaises(SystemExit) as cm:
-            addSVGtable.get_options(['-s', 'xfolder', 'xfont'])
-        self.assertEqual(cm.exception.code, 1)
-
     def test_get_options_bogus_option(self):
         args = ['--bogus', 'xfont']
         for tool in ALL_TOOLS:
-            # -s option is required for addSVGtable
-            if tool is addSVGtable:
-                args.extend(XTRA_ARGS)
+            if tool is addsvg:
+                args.insert(len(args) - 1, XTRA_ARG)  # insert the folder path
             with self.assertRaises(SystemExit) as cm:
                 tool.get_options(args)
             self.assertEqual(cm.exception.code, 2)
@@ -73,55 +62,59 @@ class OptionsTest(unittest.TestCase):
     def test_get_options_invalid_font_path(self):
         args = ['xfont']
         for tool in ALL_TOOLS:
-            if tool is addSVGtable:
-                args.extend(XTRA_ARGS)
+            if tool is addsvg:
+                args.insert(len(args) - 1, XTRA_ARG)  # insert the folder path
             opts = tool.get_options(args)
             self.assertEqual(opts.font_paths_list, [])
 
     def test_get_options_not_a_font_path(self):
-        not_a_font_path = os.path.join('fonts', 'test.html')
-        args = [not_a_font_path]
+        args = [os.path.join('fonts', 'test.html')]
         for tool in ALL_TOOLS:
-            if tool is addSVGtable:
-                args.extend(XTRA_ARGS)
+            if tool is addsvg:
+                args.insert(len(args) - 1, XTRA_ARG)  # insert the folder path
             opts = tool.get_options(args)
             self.assertEqual(opts.font_paths_list, [])
 
     def test_get_options_good_font_path(self):
         args = [self.font_path]
         for tool in ALL_TOOLS:
-            if tool is addSVGtable:
-                args.extend(XTRA_ARGS)
+            if tool is addsvg:
+                args.insert(len(args) - 1, XTRA_ARG)  # insert the folder path
             opts = tool.get_options(args)
             self.assertEqual(os.path.basename(opts.font_paths_list[0]),
                              os.path.basename(self.font_path))
 
-    @unittest.skipIf(have_brotli, "brotli module is installed")
-    def test_get_options_addSVGtable_brotli_missing(self):
+    def test_get_options_addsvg_invalid_folder_path(self):
         with self.assertRaises(SystemExit) as cm:
-            addSVGtable.get_options(XTRA_ARGS + ['-w', self.font_path])
+            addsvg.get_options(['-s', 'xfolder', 'xfont'])
+        self.assertEqual(cm.exception.code, 1)
+
+    @unittest.skipIf(have_brotli, "brotli module is installed")
+    def test_get_options_addsvg_brotli_missing(self):
+        with self.assertRaises(SystemExit) as cm:
+            addsvg.get_options([XTRA_ARG, '-w', self.font_path])
         self.assertEqual(cm.exception.code, 1)
 
     @unittest.skipIf(not have_brotli, "brotli module is not installed")
-    def test_get_options_addSVGtable_store_true_opts(self):
-        args = XTRA_ARGS + ['-w', '-z', self.font_path]
-        opts = addSVGtable.get_options(args)
+    def test_get_options_addsvg_store_true_opts(self):
+        args = [XTRA_ARG, '-w', '-z', self.font_path]
+        opts = addsvg.get_options(args)
         attr = ('make_font_copy', 'strip_viewbox',
                 'generate_woffs', 'compress_svgs')
         result = list(set([getattr(opts, name) for name in attr]))[0]
         self.assertTrue(result)
 
-    def test_get_options_addSVGtable_store_false_opts(self):
-        args = XTRA_ARGS + ['-m', '-k', self.font_path]
-        opts = addSVGtable.get_options(args)
+    def test_get_options_addsvg_store_false_opts(self):
+        args = [XTRA_ARG, '-m', '-k', self.font_path]
+        opts = addsvg.get_options(args)
         attr = ('make_font_copy', 'strip_viewbox',
                 'generate_woffs', 'compress_svgs')
         result = list(set([getattr(opts, name) for name in attr]))[0]
         self.assertFalse(result)
 
-    def test_get_options_dumpSVGtable_store_true_opts(self):
+    def test_get_options_dumpsvg_store_true_opts(self):
         args = ['-r', self.font_path]
-        opts = dumpSVGtable.get_options(args)
+        opts = dumpsvg.get_options(args)
         result = getattr(opts, 'reset_viewbox')
         self.assertTrue(result)
 
@@ -131,24 +124,24 @@ class OptionsTest(unittest.TestCase):
         result = getattr(opts, 'glyphsets_union')
         self.assertTrue(result)
 
-    def test_get_options_addSVGtable_opts_defaults(self):
+    def test_get_options_addsvg_opts_defaults(self):
         dflt = {'make_font_copy': True,
                 'strip_viewbox': True,
                 'generate_woffs': False,
                 'gnames_to_exclude': [],
                 'compress_svgs': False}
-        args = XTRA_ARGS + [self.font_path]
-        opts = addSVGtable.get_options(args)
+        args = [XTRA_ARG, self.font_path]
+        opts = addsvg.get_options(args)
         for key, val in dflt.items():
             self.assertEqual(getattr(opts, key), val)
 
-    def test_get_options_dumpSVGtable_opts_defaults(self):
+    def test_get_options_dumpsvg_opts_defaults(self):
         dflt = {'output_folder_path': None,
                 'reset_viewbox': False,
                 'gnames_to_generate': [],
                 'gnames_to_exclude': []}
         args = [self.font_path]
-        opts = dumpSVGtable.get_options(args)
+        opts = dumpsvg.get_options(args)
         for key, val in dflt.items():
             self.assertEqual(getattr(opts, key), val)
 
@@ -183,16 +176,16 @@ class OptionsTest(unittest.TestCase):
             opts = fonts2svg.get_options(['-g', seq, self.font_path])
             self.assertEqual(opts.gnames_to_generate, ['a', 'b'])
 
-    def test_get_options_addSVGtable_multiple_fonts(self):
-        args = XTRA_ARGS + [self.font_path, self.font_path]
+    def test_get_options_addsvg_multiple_fonts(self):
+        args = [XTRA_ARG, self.font_path, self.font_path]
         with self.assertRaises(SystemExit) as cm:
-            addSVGtable.get_options(args)
+            addsvg.get_options(args)
         self.assertEqual(cm.exception.code, 2)
 
-    def test_get_options_dumpSVGtable_multiple_fonts(self):
+    def test_get_options_dumpsvg_multiple_fonts(self):
         args = [self.font_path, self.font_path]
         with self.assertRaises(SystemExit) as cm:
-            dumpSVGtable.get_options(args)
+            dumpsvg.get_options(args)
         self.assertEqual(cm.exception.code, 2)
 
     def test_get_options_fonts2svg_multiple_fonts(self):

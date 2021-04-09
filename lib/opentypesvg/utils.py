@@ -27,15 +27,16 @@ def write_file(file_path, data):
 def get_font_format(font_file_path):
     with open(font_file_path, "rb") as f:
         head = f.read(4).decode()
-        if head == "OTTO":
-            return "OTF"
-        elif head in ("\0\1\0\0", "true"):
-            return "TTF"
-        elif head == "wOFF":
-            return "WOFF"
-        elif head == "wOF2":
-            return "WOFF2"
-        return None
+
+    if head == "OTTO":
+        return "OTF"
+    elif head in ("\x00\x01\x00\x00", "true"):
+        return "TTF"
+    elif head == "wOFF":
+        return "WOFF"
+    elif head == "wOF2":
+        return "WOFF2"
+    return None
 
 
 def validate_font_paths(paths_list):
@@ -43,7 +44,7 @@ def validate_font_paths(paths_list):
     for path in paths_list:
         path = os.path.realpath(path)
         if (os.path.isfile(path) and get_font_format(path) in
-           ['OTF', 'TTF', 'WOFF', 'WOFF2']):
+                ['OTF', 'TTF', 'WOFF', 'WOFF2']):
             validated_paths_list.append(path)
         else:
             print("ERROR: {} is not a valid font file path.".format(path),

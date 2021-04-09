@@ -17,7 +17,7 @@ try:
 except ImportError:
     StringIO = UnicodeIO  # Py3
 
-import util.shared_utils as shared_utils
+from opentypesvg import utils as shared_utils
 
 
 class SharedUtilsTest(unittest.TestCase):
@@ -46,7 +46,7 @@ class SharedUtilsTest(unittest.TestCase):
 
     def test_get_font_format(self):
         in_out = {"OTTO": "OTF",
-                  "\0\1\0\0": "TTF",
+                  "\x00\x01\x00\x00": "TTF",
                   "true": "TTF",
                   "wOFF": "WOFF",
                   "wOF2": "WOFF2",
