@@ -7,8 +7,6 @@ Adds an SVG table to a font, using SVG files provided.
 The font format can be either OpenType or TrueType.
 """
 
-from __future__ import print_function
-
 __version__ = '1.1.1'
 
 import argparse

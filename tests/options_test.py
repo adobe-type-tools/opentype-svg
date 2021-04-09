@@ -1,7 +1,5 @@
 # Copyright 2018 Adobe. All rights reserved.
 
-from __future__ import print_function, division, absolute_import
-
 import os
 import sys
 import unittest

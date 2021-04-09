@@ -8,8 +8,6 @@ for each of them. The fonts' format can be either OpenType, TrueType, WOFF,
 or WOFF2.
 """
 
-from __future__ import division, print_function
-
 __version__ = '1.1.1'
 
 import argparse

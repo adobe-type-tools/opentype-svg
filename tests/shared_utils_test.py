@@ -1,21 +1,11 @@
 # Copyright 2018 Adobe. All rights reserved.
 
-from __future__ import print_function, division, absolute_import
-
 import os
 import shutil
 import sys
 import tempfile
 import unittest
-
-__all__ = ['StringIO']
-
-# copied from fontTools/misc/py23.py
-from io import StringIO as UnicodeIO
-try:
-    from StringIO import StringIO  # Py2
-except ImportError:
-    StringIO = UnicodeIO  # Py3
+from io import StringIO
 
 from opentypesvg import utils as shared_utils
 
