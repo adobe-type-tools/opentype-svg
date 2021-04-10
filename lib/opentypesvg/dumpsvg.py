@@ -7,8 +7,6 @@ Saves the contents of a font's SVG table as individual SVG files.
 The font's format can be either OpenType, TrueType, WOFF, or WOFF2.
 """
 
-__version__ = '1.1.1'
-
 import argparse
 import os
 import re
@@ -16,6 +14,7 @@ import sys
 
 from fontTools import ttLib
 
+from opentypesvg.__version__ import version as __version__
 from opentypesvg.utils import (
     create_folder,
     create_nested_folder,

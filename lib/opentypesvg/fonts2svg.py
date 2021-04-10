@@ -8,8 +8,6 @@ for each of them. The fonts' format can be either OpenType, TrueType, WOFF,
 or WOFF2.
 """
 
-__version__ = '1.1.1'
-
 import argparse
 import os
 import re
@@ -19,6 +17,7 @@ from fontTools import ttLib
 from fontTools.pens.basePen import BasePen
 from fontTools.pens.transformPen import TransformPen
 
+from opentypesvg.__version__ import version as __version__
 from opentypesvg.utils import (
     create_folder,
     create_nested_folder,

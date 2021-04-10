@@ -7,8 +7,6 @@ Adds an SVG table to a font, using SVG files provided.
 The font format can be either OpenType or TrueType.
 """
 
-__version__ = '1.1.1'
-
 import argparse
 import os
 import re
@@ -17,6 +15,7 @@ from shutil import copy2
 
 from fontTools import ttLib
 
+from opentypesvg.__version__ import version as __version__
 from opentypesvg.utils import (
     read_file,
     split_comma_sequence,

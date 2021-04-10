@@ -5,7 +5,8 @@ with open("README.md", "r") as fh:
 
 setup(
     name="opentypesvg",
-    version="1.1.1",
+    use_scm_version={'write_to': 'lib/opentypesvg/__version__.py'},
+    setup_requires=["setuptools_scm"],
     author="Miguel Sousa",
     author_email="msousa@adobe.com",
     description="Tools for making OpenType-SVG fonts",

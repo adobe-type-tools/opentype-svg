@@ -3,3 +3,5 @@
 build
 venv
 dist
+.eggs
+__version__.py
