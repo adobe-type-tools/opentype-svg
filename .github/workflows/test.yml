@@ -35,4 +35,7 @@ jobs:
         python -m pip install .
     - name: Test with pytest
       run: |
-        pytest -v --cov
+        pytest -v --cov --cov-report=xml
+    - name: Report coverage to Codecov
+      run: |
+        bash <(curl -s https://codecov.io/bash) -y .codecov.yml
