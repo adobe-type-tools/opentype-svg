@@ -1,4 +1,5 @@
 [![PyPI](https://img.shields.io/pypi/v/opentypesvg.svg)](https://pypi.org/project/opentypesvg)
+[![Status](https://github.com/adobe-type-tools/opentype-svg/actions/workflows/test.yml/badge.svg)](https://github.com/adobe-type-tools/opentype-svg/actions/workflows/test.yml)
 [![Codecov](https://codecov.io/gh/adobe-type-tools/opentype-svg/branch/master/graph/badge.svg)](https://codecov.io/gh/adobe-type-tools/opentype-svg)
 
 # Tools for making OpenType-SVG fonts
