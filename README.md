@@ -59,7 +59,7 @@
 
 ![step2](https://raw.githubusercontent.com/adobe-type-tools/opentype-svg/master/imgs/step2.png "step 2")
 
-	addsvg -s fonts/SVGs fonts/Zebrawood.otf
+	addsvg fonts/SVGs fonts/Zebrawood.otf
 
 You can use **Step 2** without doing **Step 1**, but there are a few things you need to be aware of when using the `addsvg` tool:
 
