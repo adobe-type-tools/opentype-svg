@@ -45,3 +45,4 @@ jobs:
       uses: codecov/codecov-action@v1
       with:
         name: Python ${{ matrix.python-version }}
+        files: ./coverage.xml
