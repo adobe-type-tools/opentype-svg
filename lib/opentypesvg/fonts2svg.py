@@ -280,7 +280,7 @@ def get_options(args):
         '-av', '--adjust-viewbox',
         action='store_true',
         dest='adjust_view_box_to_glyph',
-        help="adjust the viewbox to the glyph (descender calculated and lineGap in height)."
+        help="adjust the viewbox to the glyph (descender and lineGap calculated in height)."
     )
     parser.add_argument(
         'input_paths',
