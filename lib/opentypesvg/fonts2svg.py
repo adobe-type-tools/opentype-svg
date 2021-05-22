@@ -203,9 +203,13 @@ def viewbox_settings(font_paths_list, options):
             hhea = tt_font['hhea']
             height = hhea.ascender + abs(hhea.descender) + hhea.lineGap # hhea.descender is negative
             width = hhea.advanceWidthMax
+            y = -hhea.ascender
         except KeyError:
-           upm = 1000
-        return """viewBox="0 {} {} {}">\n""".format(-hhea.ascender, width, height)
+           height = 1000
+           width = 1000
+           y = -1000
+            
+        return """viewBox="0 {} {} {}">\n""".format(y, width, height)
 
 
 
@@ -280,7 +284,7 @@ def get_options(args):
         '-av', '--adjust-viewbox',
         action='store_true',
         dest='adjust_view_box_to_glyph',
-        help="adjust the viewbox to the glyph (descender and lineGap calculated in height)."
+        help="adjust the viewbox to the glyph (descender calculated and lineGap in height)."
     )
     parser.add_argument(
         'input_paths',
