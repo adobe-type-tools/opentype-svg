@@ -126,20 +126,15 @@ def processFonts(font_paths_list, hex_colors_list, outputFolderPath, options):
     glyphNamesToSaveInNestedFolder = get_gnames_to_save_in_nested_folder(
         glyphNamesList)
 
-    # Gather the fonts' UPM. For simplicity, it's assumed that all fonts have
-    # the same UPM value. If fetching the UPM value fails, default to 1000.
-    try:
-        upm = ttLib.TTFont(font_paths_list[0])['head'].unitsPerEm
-    except KeyError:
-        upm = 1000
-
     nestedFolderPath = None
     filesSaved = 0
+
+    viewbox = viewbox_settings(font_paths_list, options)
 
     # Generate the SVGs
     for gName in glyphNamesList:
         svgStr = (u"""<svg xmlns="http://www.w3.org/2000/svg" """
-                  u"""viewBox="0 -{} {} {}">\n""".format(upm, upm, upm))
+                  u"""{}""".format(viewbox))
 
         for index, gSet in enumerate(glyphSetsList):
             # Skip glyphs that don't exist in the current font,
@@ -191,6 +186,27 @@ def processFonts(font_paths_list, hex_colors_list, outputFolderPath, options):
 
     font.close()
     final_message(filesSaved)
+
+
+def viewbox_settings(font_paths_list, options):
+    tt_font = ttLib.TTFont(font_paths_list[0])
+    if not options.adjust_view_box_to_glyph:
+        # Gather the fonts' UPM. For simplicity, it's assumed that all fonts have
+        # the same UPM value. If fetching the UPM value fails, default to 1000.
+        try:
+            upm = tt_font['head'].unitsPerEm
+        except KeyError:
+            upm = 1000
+        return """viewBox="0 -{} {} {}">\n""".format(upm, upm, upm)
+    else:
+        try:
+            hhea = tt_font['hhea']
+            height = hhea.ascender + abs(hhea.descender) + hhea.lineGap # hhea.descender is negative
+            width = hhea.advanceWidthMax
+        except KeyError:
+           upm = 1000
+        return """viewBox="0 {} {} {}">\n""".format(-hhea.ascender, width, height)
+
 
 
 RE_HEXCOLOR = re.compile(r"^(?=[a-fA-F0-9]*$)(?:.{6}|.{8})$")
@@ -259,6 +275,12 @@ def get_options(args):
         action='store_true',
         dest='glyphsets_union',
         help="do union (instead of intersection) of the fonts' glyph sets."
+    )
+    parser.add_argument(
+        '-av', '--adjust-viewbox',
+        action='store_true',
+        dest='adjust_view_box_to_glyph',
+        help="adjust the viewbox to the glyph (descender calculated and lineGap in height)."
     )
     parser.add_argument(
         'input_paths',
