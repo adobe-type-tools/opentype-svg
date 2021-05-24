@@ -129,7 +129,10 @@ def processFonts(font_paths_list, hex_colors_list, outputFolderPath, options):
     nestedFolderPath = None
     filesSaved = 0
 
-    viewbox = viewbox_settings(font_paths_list, options)
+    viewbox = viewbox_settings(
+        font_paths_list[0],
+        options.adjust_view_box_to_glyph
+    )
 
     # Generate the SVGs
     for gName in glyphNamesList:
@@ -188,29 +191,27 @@ def processFonts(font_paths_list, hex_colors_list, outputFolderPath, options):
     final_message(filesSaved)
 
 
-def viewbox_settings(font_paths_list, options):
-    tt_font = ttLib.TTFont(font_paths_list[0])
-    if not options.adjust_view_box_to_glyph:
-        # Gather the fonts' UPM. For simplicity, it's assumed that all fonts have
-        # the same UPM value. If fetching the UPM value fails, default to 1000.
-        try:
+def viewbox_settings(font_path, adjust_view_box_to_glyph):
+    tt_font = ttLib.TTFont(font_path)
+    try:
+        if adjust_view_box_to_glyph:
+            # it looks like compared to viewbox in the head table
+            # the yMin and yMax are inverted
+            head = tt_font['head']
+            x = head.xMin
+            y = -head.yMax
+            width = x + head.xMax
+            height = head.yMax + abs(head.yMin)
+            return """viewBox="{} {} {} {}">\n""".format(x, y, width, height)
+        else:
+            # Gather the fonts' UPM. For simplicity,
+            # it's assumed that all fonts have the same UPM value.
+            # If fetching the UPM value fails, default to 1000.
             upm = tt_font['head'].unitsPerEm
-        except KeyError:
-            upm = 1000
+            return """viewBox="0 -{} {} {}">\n""".format(upm, upm, upm)
+    except KeyError:
+        upm = 1000
         return """viewBox="0 -{} {} {}">\n""".format(upm, upm, upm)
-    else:
-        try:
-            hhea = tt_font['hhea']
-            height = hhea.ascender + abs(hhea.descender) + hhea.lineGap # hhea.descender is negative
-            width = hhea.advanceWidthMax
-            y = -hhea.ascender
-        except KeyError:
-           height = 1000
-           width = 1000
-           y = -1000
-            
-        return """viewBox="0 {} {} {}">\n""".format(y, width, height)
-
 
 
 RE_HEXCOLOR = re.compile(r"^(?=[a-fA-F0-9]*$)(?:.{6}|.{8})$")
@@ -284,7 +285,7 @@ def get_options(args):
         '-av', '--adjust-viewbox',
         action='store_true',
         dest='adjust_view_box_to_glyph',
-        help="adjust the viewbox to the glyph (descender calculated and lineGap in height)."
+        help="vertically center the viewBox on the bounding box of all glyphs."
     )
     parser.add_argument(
         'input_paths',
