@@ -9,10 +9,10 @@ from opentypesvg import addsvg, dumpsvg, fonts2svg
 have_brotli = False
 try:
     import brotli  # noqa
+
     have_brotli = True
 except ImportError:
     pass
-
 
 # addsvg must be last because of the way some tests prepare the input
 ALL_TOOLS = (dumpsvg, fonts2svg, addsvg)
@@ -26,9 +26,9 @@ class OptionsTest(unittest.TestCase):
     def setUp(self):
         self.font_path = os.path.join(ROOT_DIR, 'fonts', 'Zebrawood.otf')
 
-# -----
-# Tests
-# -----
+    # -----
+    # Tests
+    # -----
 
     def test_get_options_no_args(self):
         for tool in ALL_TOOLS:
@@ -190,6 +190,18 @@ class OptionsTest(unittest.TestCase):
         args = [self.font_path, self.font_path, self.font_path]
         opts = fonts2svg.get_options(args)
         self.assertEqual(len(opts.font_paths_list), 3)
+
+    def test_get_options_adjust_viewbox(self):
+        opts = fonts2svg.get_options(['-av', 'xfont'])
+        self.assertTrue(opts.adjust_view_box_to_glyph)
+
+    def test_get_options_adjust_viewbox_2(self):
+        opts = fonts2svg.get_options(['--adjust-viewbox', 'xfont'])
+        self.assertTrue(opts.adjust_view_box_to_glyph)
+
+    def test_get_options_adjust_viewbox_not_passed(self):
+        opts = fonts2svg.get_options(['xfont'])
+        self.assertFalse(opts.adjust_view_box_to_glyph)
 
 
 if __name__ == "__main__":
