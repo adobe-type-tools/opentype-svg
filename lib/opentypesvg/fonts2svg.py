@@ -137,7 +137,7 @@ def processFonts(font_paths_list, hex_colors_list, outputFolderPath, options):
     # Generate the SVGs
     for gName in glyphNamesList:
         svgStr = (u"""<svg xmlns="http://www.w3.org/2000/svg" """
-                  u"""{}""".format(viewbox))
+                  u"""viewBox="{}">\n""".format(viewbox))
 
         for index, gSet in enumerate(glyphSetsList):
             # Skip glyphs that don't exist in the current font,
@@ -202,16 +202,16 @@ def viewbox_settings(font_path, adjust_view_box_to_glyph):
             y = -head.yMax
             width = x + head.xMax
             height = head.yMax + abs(head.yMin)
-            return """viewBox="{} {} {} {}">\n""".format(x, y, width, height)
+            return """{} {} {} {}""".format(x, y, width, height)
         else:
             # Gather the fonts' UPM. For simplicity,
             # it's assumed that all fonts have the same UPM value.
             # If fetching the UPM value fails, default to 1000.
             upm = tt_font['head'].unitsPerEm
-            return """viewBox="0 -{} {} {}">\n""".format(upm, upm, upm)
+            return """0 -{} {} {}""".format(upm, upm, upm)
     except KeyError:
         upm = 1000
-        return """viewBox="0 -{} {} {}">\n""".format(upm, upm, upm)
+        return """0 -{} {} {}""".format(upm, upm, upm)
 
 
 RE_HEXCOLOR = re.compile(r"^(?=[a-fA-F0-9]*$)(?:.{6}|.{8})$")
