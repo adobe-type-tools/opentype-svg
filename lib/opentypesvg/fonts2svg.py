@@ -192,12 +192,11 @@ def processFonts(font_paths_list, hex_colors_list, outputFolderPath, options):
 
 
 def viewbox_settings(font_path, adjust_view_box_to_glyph):
-    tt_font = ttLib.TTFont(font_path)
+    head = ttLib.TTFont(font_path)["head"]
     try:
         if adjust_view_box_to_glyph:
             # it looks like compared to viewbox in the head table
             # the yMin and yMax are inverted
-            head = tt_font['head']
             x = head.xMin
             y = -head.yMax
             width = x + head.xMax
@@ -207,7 +206,7 @@ def viewbox_settings(font_path, adjust_view_box_to_glyph):
             # Gather the fonts' UPM. For simplicity,
             # it's assumed that all fonts have the same UPM value.
             # If fetching the UPM value fails, default to 1000.
-            upm = tt_font['head'].unitsPerEm
+            upm = head.unitsPerEm
             return """0 -{} {} {}""".format(upm, upm, upm)
     except KeyError:
         upm = 1000
