@@ -3,11 +3,11 @@
 from opentypesvg.fonts2svg import viewbox_settings
 
 
-def test_adjust_to_viewbox(base_font_path, capsys):
+def test_adjust_to_viewbox(base_font_path):
     viewbox = viewbox_settings(base_font_path, True)
     assert viewbox == "-168 -850 998 1151"
 
 
-def test_adjust_to_viewbox_default(base_font_path, capsys):
+def test_adjust_to_viewbox_default(base_font_path):
     viewbox = viewbox_settings(base_font_path, False)
     assert viewbox == "0 -1000 1000 1000"
