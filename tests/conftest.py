@@ -13,3 +13,8 @@ def fonts_dir():
 @pytest.fixture
 def base_font_path(fonts_dir):
     yield os.path.join(fonts_dir, 'Zebrawood.otf')
+
+
+@pytest.fixture
+def fixtures_dir():
+    yield os.path.join(os.path.dirname(__file__), 'fixtures')
