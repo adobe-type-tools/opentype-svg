@@ -126,20 +126,18 @@ def processFonts(font_paths_list, hex_colors_list, outputFolderPath, options):
     glyphNamesToSaveInNestedFolder = get_gnames_to_save_in_nested_folder(
         glyphNamesList)
 
-    # Gather the fonts' UPM. For simplicity, it's assumed that all fonts have
-    # the same UPM value. If fetching the UPM value fails, default to 1000.
-    try:
-        upm = ttLib.TTFont(font_paths_list[0])['head'].unitsPerEm
-    except KeyError:
-        upm = 1000
-
     nestedFolderPath = None
     filesSaved = 0
+
+    viewbox = viewbox_settings(
+        font_paths_list[0],
+        options.adjust_view_box_to_glyph
+    )
 
     # Generate the SVGs
     for gName in glyphNamesList:
         svgStr = (u"""<svg xmlns="http://www.w3.org/2000/svg" """
-                  u"""viewBox="0 -{} {} {}">\n""".format(upm, upm, upm))
+                  u"""viewBox="{}">\n""".format(viewbox))
 
         for index, gSet in enumerate(glyphSetsList):
             # Skip glyphs that don't exist in the current font,
@@ -191,6 +189,28 @@ def processFonts(font_paths_list, hex_colors_list, outputFolderPath, options):
 
     font.close()
     final_message(filesSaved)
+
+
+def viewbox_settings(font_path, adjust_view_box_to_glyph):
+    try:
+        head = ttLib.TTFont(font_path)["head"]
+        if adjust_view_box_to_glyph:
+            # it looks like compared to viewbox in the head table
+            # the yMin and yMax are inverted
+            x = head.xMin
+            y = -head.yMax
+            width = head.xMax - head.xMin
+            height = head.yMax - head.yMin
+            return """{} {} {} {}""".format(x, y, width, height)
+        else:
+            # Gather the fonts' UPM. For simplicity,
+            # it's assumed that all fonts have the same UPM value.
+            # If fetching the UPM value fails, default to 1000.
+            upm = head.unitsPerEm
+            return """0 -{} {} {}""".format(upm, upm, upm)
+    except KeyError:
+        upm = 1000
+        return """0 -{} {} {}""".format(upm, upm, upm)
 
 
 RE_HEXCOLOR = re.compile(r"^(?=[a-fA-F0-9]*$)(?:.{6}|.{8})$")
@@ -259,6 +279,12 @@ def get_options(args):
         action='store_true',
         dest='glyphsets_union',
         help="do union (instead of intersection) of the fonts' glyph sets."
+    )
+    parser.add_argument(
+        '-av', '--adjust-viewbox',
+        action='store_true',
+        dest='adjust_view_box_to_glyph',
+        help="vertically center the viewBox on the bounding box of all glyphs."
     )
     parser.add_argument(
         'input_paths',
