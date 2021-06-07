@@ -86,14 +86,17 @@ def processFonts(font_paths_list, hex_colors_list, outputFolderPath, options):
 
     # Load the fonts and collect their glyph sets
     for fontPath in font_paths_list:
-        font = ttLib.TTFont(fontPath)
-        gSet = font.getGlyphSet()
-        glyphSetsList.append(gSet)
-        allGlyphNamesList.append(gSet.keys())
-        font.close()
+        try:
+            font = ttLib.TTFont(fontPath)
+            gSet = font.getGlyphSet()
+            glyphSetsList.append(gSet)
+            allGlyphNamesList.append(gSet.keys())
+            font.close()
 
-    if not glyphSetsList:
-        raise AssertionError("No glyph sets.")
+        except ttLib.TTLibError:
+            print(f"ERROR: {fontPath} cannot be processed.",
+                  file=sys.stderr)
+            return 1
 
     # Define the list of glyph names to convert to SVG
     if options.gnames_to_generate:
@@ -119,7 +122,7 @@ def processFonts(font_paths_list, hex_colors_list, outputFolderPath, options):
     if not glyphNamesList:
         print("The fonts and options provided can't produce any SVG files.",
               file=sys.stdout)
-        return
+        return 1
 
     # Define the list of glyph names to skip
     glyphNamesToSkipList = []
@@ -193,6 +196,7 @@ def processFonts(font_paths_list, hex_colors_list, outputFolderPath, options):
 
     font.close()
     final_message(filesSaved)
+    return 0
 
 
 def viewbox_settings(font_path, adjust_view_box_to_glyph):
@@ -329,7 +333,8 @@ def main(args=None):
     output_folder_path = get_output_folder_path(opts.output_folder_path,
                                                 font_paths_list[0])
 
-    processFonts(font_paths_list, hex_colors_list, output_folder_path, opts)
+    return processFonts(font_paths_list, hex_colors_list, output_folder_path,
+                        opts)
 
 
 if __name__ == "__main__":
