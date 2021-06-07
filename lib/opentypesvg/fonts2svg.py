@@ -101,15 +101,15 @@ def processFonts(font_paths_list, hex_colors_list, outputFolderPath, options):
     else:
         if options.glyphsets_union:
             glyphNamesList = sorted(
-                list(set.union(*map(set, allGlyphNamesList))))
+                set.union(*map(set, allGlyphNamesList)))
         else:
             glyphNamesList = sorted(
-                list(set.intersection(*map(set, allGlyphNamesList))))
+                set.intersection(*map(set, allGlyphNamesList)))
             # Extend the list with additional glyph names
             if options.gnames_to_add:
                 glyphNamesList.extend(options.gnames_to_add)
                 # Remove any duplicates and sort
-                glyphNamesList = sorted(list(set(glyphNamesList)))
+                glyphNamesList = sorted(set(glyphNamesList))
 
     # Remove '.notdef'
     if '.notdef' in glyphNamesList:
