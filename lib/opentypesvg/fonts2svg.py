@@ -111,6 +111,10 @@ def processFonts(font_paths_list, hex_colors_list, outputFolderPath, options):
                 # Remove any duplicates and sort
                 glyphNamesList = sorted(list(set(glyphNamesList)))
 
+    # Remove '.notdef'
+    if '.notdef' in glyphNamesList:
+        glyphNamesList.remove('.notdef')
+
     # Confirm that there's something to process
     if not glyphNamesList:
         print("The fonts and options provided can't produce any SVG files.",
@@ -118,7 +122,7 @@ def processFonts(font_paths_list, hex_colors_list, outputFolderPath, options):
         return
 
     # Define the list of glyph names to skip
-    glyphNamesToSkipList = [".notdef"]
+    glyphNamesToSkipList = []
     if options.gnames_to_exclude:
         glyphNamesToSkipList.extend(options.gnames_to_exclude)
 
