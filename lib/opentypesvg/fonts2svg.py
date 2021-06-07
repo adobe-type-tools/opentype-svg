@@ -97,7 +97,7 @@ def processFonts(font_paths_list, hex_colors_list, outputFolderPath, options):
 
     # Define the list of glyph names to convert to SVG
     if options.gnames_to_generate:
-        glyphNamesList = sorted(options.gnames_to_generate)
+        glyphNamesList = sorted(set(options.gnames_to_generate))
     else:
         if options.glyphsets_union:
             glyphNamesList = sorted(
