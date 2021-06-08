@@ -45,3 +45,5 @@ jobs:
       with:
         name: Python ${{ matrix.python-version }}
         files: ./coverage.xml
+        token: ${{ secrets.CODECOV_TOKEN }}
+
