@@ -94,7 +94,13 @@ def test_main_svgs_folder(fixtures_dir, tmp_path):
 
     assert os.path.isdir(svgs_dir)
     assert os.path.exists(os.path.join(temp_dir, SVG_FOLDER_NAME, 'a.svg'))
-    assert os.path.exists(os.path.join(temp_dir, SVG_FOLDER_NAME, 'b.svg'))
+
+    # test that overlapping contour points are skipped when glphy to SVG path
+    svg_file_name = 'b.svg'
+    test_svg_path = os.path.join(temp_dir, SVG_FOLDER_NAME, svg_file_name)
+    assert os.path.exists(test_svg_path)
+    expected_svg_path = os.path.join(fixtures_dir, svg_file_name)
+    assert filecmp.cmp(test_svg_path, expected_svg_path)
 
 
 def test_main_nested_folder(fixtures_dir, tmp_path):
