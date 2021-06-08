@@ -161,7 +161,8 @@ def test_main_x_opt_and_extra_colors(shadow_font_path, capsys, tmp_path):
     """
     output_folder = str(tmp_path)
 
-    main([shadow_font_path, '-x', 'A', '-c', '99ccffaa,ff006677',
+    main([shadow_font_path, shadow_font_path,
+          '-x', 'A', '-c', '99ccffFF,ff006677,cc0066',
           '-o', output_folder])
 
     assert not os.path.exists(os.path.join(output_folder, 'A.svg'))
@@ -170,7 +171,7 @@ def test_main_x_opt_and_extra_colors(shadow_font_path, capsys, tmp_path):
 
     captured = capsys.readouterr()
     assert captured.err == ("WARNING: The list of colors got the last 1 "
-                            "value(s) truncated: 99ccffaa\n")
+                            "value(s) truncated: cc0066\n")
 
 
 def test_main_exclude_all_glyphs(shadow_font_path, capsys, tmp_path):

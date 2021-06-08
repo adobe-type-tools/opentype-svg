@@ -318,17 +318,21 @@ def main(args=None):
     # Confirm that the number of colors is the same as the fonts. If it's not,
     # extend the list of colors using SVG's default color (black), or trim the
     # list of colors.
-    if len(hex_colors_list) < len(font_paths_list):
-        num_add_col = len(font_paths_list) - len(hex_colors_list)
-        hex_colors_list.extend(['000000'] * num_add_col)
+    length_hex_colors = len(hex_colors_list)
+    length_font_paths = len(font_paths_list)
+
+    if length_hex_colors < length_font_paths:
+        num_add_col = length_font_paths - length_hex_colors
         print("WARNING: The list of colors was extended with {} #000000 "
               "value(s).".format(num_add_col), file=sys.stderr)
-    elif len(hex_colors_list) > len(font_paths_list):
-        num_xtr_col = len(hex_colors_list) - len(font_paths_list)
-        del hex_colors_list[len(font_paths_list):]
+        hex_colors_list.extend(['000000'] * num_add_col)
+
+    elif length_hex_colors > length_font_paths:
+        num_xtr_col = length_hex_colors - length_font_paths
         print("WARNING: The list of colors got the last {} value(s) truncated:"
               " {}".format(num_xtr_col, ' '.join(
                   hex_colors_list[-num_xtr_col:])), file=sys.stderr)
+        del hex_colors_list[length_font_paths:]
 
     output_folder_path = get_output_folder_path(opts.output_folder_path,
                                                 font_paths_list[0])
