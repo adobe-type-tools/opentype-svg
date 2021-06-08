@@ -113,8 +113,8 @@ def test_main_nested_folder(fixtures_dir, tmp_path):
     main(['-c', '009900', fixt_font_path, '-o', temp_dir])
 
     assert os.path.isdir(more_svgs_dir)
-    assert os.path.exists(os.path.join(temp_dir, 'a.svg'))
-    assert os.path.exists(os.path.join(temp_dir, NESTED_FOLDER_NAME, 'A.svg'))
+    assert os.path.exists(os.path.join(temp_dir, 'A.svg'))
+    assert os.path.exists(os.path.join(temp_dir, NESTED_FOLDER_NAME, 'a.svg'))
 
 
 def test_main_blank_glyph(fixtures_dir, tmp_path):
