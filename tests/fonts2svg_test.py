@@ -41,7 +41,7 @@ def test_main(shadow_font_path, fill_font_path, dots_font_path, fixtures_dir,
     """
     output_folder = str(tmp_path)
 
-    main(['-c', '99ccff,ff0066,cc0066',
+    main(['-c', '99ccff77,ff0066aA,cc0066FF',
           shadow_font_path, fill_font_path, dots_font_path,
           '-o', output_folder])
 
@@ -95,7 +95,8 @@ def test_main_svgs_folder(fixtures_dir, tmp_path):
     assert os.path.isdir(svgs_dir)
     assert os.path.exists(os.path.join(temp_dir, SVG_FOLDER_NAME, 'a.svg'))
 
-    # test that overlapping contour points are skipped when glphy to SVG path
+    # test that overlapping contour points are skipped when the glyph is
+    # written to SVG path
     svg_file_name = 'b.svg'
     test_svg_path = os.path.join(temp_dir, SVG_FOLDER_NAME, svg_file_name)
     assert os.path.exists(test_svg_path)
@@ -162,7 +163,7 @@ def test_main_x_opt_and_extra_colors(shadow_font_path, capsys, tmp_path):
     output_folder = str(tmp_path)
 
     main([shadow_font_path, shadow_font_path,
-          '-x', 'A', '-c', '99ccffFF,ff006677,cc0066',
+          '-x', 'A', '-c', '99ccff,ff0066,cc0066',
           '-o', output_folder])
 
     assert not os.path.exists(os.path.join(output_folder, 'A.svg'))
