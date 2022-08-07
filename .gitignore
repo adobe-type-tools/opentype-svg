@@ -7,3 +7,4 @@ dist
 __version__.py
 .coverage
 htmlcov
+xtra
