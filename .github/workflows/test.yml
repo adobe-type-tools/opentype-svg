@@ -9,6 +9,12 @@ on:
     branches: [ master ]
     paths-ignore: [ '**.md' ]
 
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for running workflow'
+        required: true
+
 jobs:
   test:
 
@@ -33,6 +39,11 @@ jobs:
             python-version: 3.8
 
     steps:
+    - name: Log reason (manual run only)
+      if: github.event_name == 'workflow_dispatch'
+      run: |
+        echo "Reason for triggering: ${{ github.event.inputs.reason }}"
+
     - uses: actions/checkout@v2
 
     - name: Set up Python ${{ matrix.python-version }}
