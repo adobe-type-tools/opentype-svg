@@ -92,7 +92,7 @@ def processFont(fontPath, outputFolderPath, options):
         if options.reset_viewbox:
             svgItemData = resetViewBox(svgItemData)
 
-        while(startGID != endGID + 1):
+        while (startGID != endGID + 1):
             try:
                 gName = glyphOrder[startGID]
             except IndexError:
