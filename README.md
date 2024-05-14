@@ -30,19 +30,19 @@
 		python -m venv ot-svg
 
 
-- Activate the environment:
+- Activate the virtual environment:
 
-		source ot-svg/bin/activate
+    - macOS & Linux
 
+            source ot-svg/bin/activate
 
-- Update **pip**:
+    - Windows
 
-		pip install -U pip
-
+            ot-svg\Scripts\activate.bat
 
 - Install **opentypesvg**:
 
-		pip install opentypesvg
+		python -m pip install opentypesvg
 
 
 # How to make OpenType-SVG fonts?
