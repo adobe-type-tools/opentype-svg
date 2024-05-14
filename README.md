@@ -22,28 +22,35 @@
 
 - Make sure you have Python 3.6 (or higher) installed:
 
-		python --version
-
+    ```sh
+    python --version
+    ```
 
 - Setup a virtual environment:
 
-		python -m venv ot-svg
-
+    ```sh
+    python -m venv ot-svg
+    ```
 
 - Activate the virtual environment:
 
     - macOS & Linux
 
-            source ot-svg/bin/activate
+        ```sh
+        source ot-svg/bin/activate
+        ```
 
     - Windows
 
-            ot-svg\Scripts\activate.bat
+        ```sh
+        ot-svg\Scripts\activate.bat
+        ```
 
 - Install **opentypesvg**:
 
-		python -m pip install opentypesvg
-
+    ```sh
+    python -m pip install opentypesvg
+    ```
 
 # How to make OpenType-SVG fonts?
 
